@@ -33,6 +33,7 @@ public class buildks {
 	public static void main(String[] args) {
 		buildks buildksOBJ=new buildks();
 		String command=null;
+		String pass=null;
 		try{
 			if(args!=null && args.length>=3){
 				command=args[0];
@@ -41,6 +42,9 @@ public class buildks {
 						buildksOBJ.createCredential(args);
 					}else if(command.equalsIgnoreCase("list")){
 						buildksOBJ.listCredential(args);
+					}else if(command.equalsIgnoreCase("get")){
+						pass=buildksOBJ.getCredential(args);
+						System.out.println(pass);
 					}else{
 						System.out.println(command +" is not supported in current version of CredentialBuilder API.");
 						System.exit(1);
