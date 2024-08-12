@@ -18,9 +18,9 @@
  */
 package org.apache.ranger.usergroupsync;
 
+import org.apache.ranger.unixusersync.config.UserGroupSyncConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.ranger.unixusersync.config.UserGroupSyncConfig;
 
 public abstract class AbstractUserGroupSource {
 

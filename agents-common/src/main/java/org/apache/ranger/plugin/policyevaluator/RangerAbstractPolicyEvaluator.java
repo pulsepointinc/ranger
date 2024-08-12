@@ -348,7 +348,7 @@ public abstract class RangerAbstractPolicyEvaluator implements RangerPolicyEvalu
 
 				RangerPolicy policy = getPolicy();
 
-				resourceACLs.setUserAccessInfo(userName, accessType, accessResult, policy);
+				resourceACLs.setUserAccessInfo(userName, accessInfo.getKey(), accessResult, policy);
 			}
 		}
 
@@ -376,7 +376,7 @@ public abstract class RangerAbstractPolicyEvaluator implements RangerPolicyEvalu
 
 				RangerPolicy policy = getPolicy();
 
-				resourceACLs.setGroupAccessInfo(groupName, accessType, accessResult, policy);
+				resourceACLs.setGroupAccessInfo(groupName, accessInfo.getKey(), accessResult, policy);
 			}
 		}
 
@@ -404,7 +404,7 @@ public abstract class RangerAbstractPolicyEvaluator implements RangerPolicyEvalu
 
 				RangerPolicy policy = getPolicy();
 
-				resourceACLs.setRoleAccessInfo(roleName, accessType, accessResult, policy);
+				resourceACLs.setRoleAccessInfo(roleName, accessInfo.getKey(), accessResult, policy);
 			}
 		}
 	}

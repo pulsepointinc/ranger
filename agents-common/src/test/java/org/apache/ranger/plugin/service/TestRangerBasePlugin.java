@@ -52,8 +52,6 @@ public class TestRangerBasePlugin {
         peOptions.disablePolicyRefresher    = true;
         peOptions.disableTagRetriever       = true;
         peOptions.disableUserStoreRetriever = true;
-        peOptions.disableGdsInfoRetriever   = true;
-
     }
 
 
@@ -77,11 +75,10 @@ public class TestRangerBasePlugin {
         assertNotNull("invalid input: " + testName, testCase.tags);
         assertNotNull("invalid input: " + testName, testCase.roles);
         assertNotNull("invalid input: " + testName, testCase.userStore);
-        assertNotNull("invalid input: " + testName, testCase.gdsInfo);
         assertNotNull("invalid input: " + testName, testCase.tests);
 
         RangerPluginConfig pluginConfig = new RangerPluginConfig(testCase.policies.getServiceDef().getName(), testCase.policies.getServiceName(), "hive", "cl1", "on-prem", peOptions);
-        RangerBasePlugin   plugin       = new RangerBasePlugin(pluginConfig, testCase.policies, testCase.tags, testCase.roles, testCase.userStore, testCase.gdsInfo);
+        RangerBasePlugin   plugin       = new RangerBasePlugin(pluginConfig, testCase.policies, testCase.tags, testCase.roles, testCase.userStore);
 
         for (TestData test : testCase.tests) {
             RangerAccessRequest request = test.request;
@@ -133,12 +130,6 @@ public class TestRangerBasePlugin {
             testCase.userStore = gsonBuilder.fromJson(new InputStreamReader(inStream), RangerUserStore.class);
         }
 
-        if (StringUtils.isNotBlank(testCase.gdsInfoFilename)) {
-            InputStream inStream = this.getClass().getResourceAsStream(testCase.gdsInfoFilename);
-
-            testCase.gdsInfo = gsonBuilder.fromJson(new InputStreamReader(inStream), ServiceGdsInfo.class);
-        }
-
         if (testCase.policies != null && testCase.policies.getServiceDef() != null) {
             testCase.policies.getServiceDef().setMarkerAccessTypes(ServiceDefUtil.getMarkerAccessTypes(testCase.policies.getServiceDef().getAccessTypes()));
         }
@@ -151,12 +142,10 @@ public class TestRangerBasePlugin {
         public ServiceTags     tags;
         public RangerRoles     roles;
         public RangerUserStore userStore;
-        public ServiceGdsInfo  gdsInfo;
         public String          policiesFilename;
         public String          tagsFilename;
         public String          rolesFilename;
         public String          userStoreFilename;
-        public String          gdsInfoFilename;
         public List<TestData>  tests;
     }
 

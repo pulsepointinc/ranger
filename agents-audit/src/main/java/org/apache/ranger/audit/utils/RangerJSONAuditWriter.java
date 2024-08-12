@@ -40,7 +40,7 @@ import java.util.Properties;
 public class RangerJSONAuditWriter extends AbstractRangerAuditWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(RangerJSONAuditWriter.class);
-    public static final String PROP_HDFS_ROLLOVER_ENABLE_PERIODIC_ROLLOVER     = "file.rollover.enable.periodic.rollover";
+    public static final String PROP_HDFS_ROLLOVER_ENABLE_PERIODIC_ROLLOVER = "file.rollover.enable.periodic.rollover";
     public static final String PROP_HDFS_ROLLOVER_PERIODIC_ROLLOVER_CHECK_TIME = "file.rollover.periodic.rollover.check.sec";
 
     protected String JSON_FILE_EXTENSION = ".log";
@@ -57,15 +57,15 @@ public class RangerJSONAuditWriter extends AbstractRangerAuditWriter {
     */
     private long periodicRollOverCheckTimeinSec;
 
-    public void init(Properties props, String propPrefix, String auditProviderName, Map<String,String> auditConfigs) {
+    public void init(Properties props, String propPrefix, String auditProviderName, Map<String, String> auditConfigs) {
         if (logger.isDebugEnabled()) {
             logger.debug("==> RangerJSONAuditWriter.init()");
         }
         init();
-        super.init(props,propPrefix,auditProviderName,auditConfigs);
+        super.init(props, propPrefix, auditProviderName, auditConfigs);
 
         // start AuditFilePeriodicRollOverTask if enabled.
-        enableAuditFilePeriodicRollOver =  MiscUtil.getBooleanProperty(props, propPrefix + "." + PROP_HDFS_ROLLOVER_ENABLE_PERIODIC_ROLLOVER, false);
+        enableAuditFilePeriodicRollOver = MiscUtil.getBooleanProperty(props, propPrefix + "." + PROP_HDFS_ROLLOVER_ENABLE_PERIODIC_ROLLOVER, false);
         if (enableAuditFilePeriodicRollOver) {
             periodicRollOverCheckTimeinSec = MiscUtil.getLongProperty(props, propPrefix + "." + PROP_HDFS_ROLLOVER_PERIODIC_ROLLOVER_CHECK_TIME, 60L);
             try {
@@ -242,4 +242,5 @@ public class RangerJSONAuditWriter extends AbstractRangerAuditWriter {
             }
         }
     }
+
 }

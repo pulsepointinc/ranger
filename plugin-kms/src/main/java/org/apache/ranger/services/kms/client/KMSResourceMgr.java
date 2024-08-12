@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KMSResourceMgr {
-	private static final 	Logger 	LOG 		= LoggerFactory.getLogger(KMSResourceMgr.class);
+	private static final 	Logger 	LOG 	= LoggerFactory.getLogger(KMSResourceMgr.class);
 	private static final 	String  KMSKEY	= "keyname";
 	
 	public static Map<String, Object> validateConfig(String serviceName, Map<String, String> configs) throws Exception {

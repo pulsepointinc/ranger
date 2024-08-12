@@ -492,7 +492,7 @@ public class MiscUtil {
 				logger.info("Default UGI before using new Subject:"
 						+ UserGroupInformation.getLoginUser());
 			} catch (Throwable t) {
-				logger.error("failed to get login user", t);
+				logger.error("", t);
 			}
 			ugi = UserGroupInformation.getUGIFromSubject(subject);
 			logger.info("SUBJECT.UGI.NAME=" + ugi.getUserName() + ", ugi="

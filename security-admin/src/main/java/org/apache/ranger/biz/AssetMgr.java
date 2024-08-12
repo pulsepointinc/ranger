@@ -756,12 +756,6 @@ public class AssetMgr extends AssetMgrBase {
 				pluginSvcVersionInfo.setUserStoreDownloadedVersion(downloadedVersion);
 				pluginSvcVersionInfo.setUserStoreDownloadTime(new Date().getTime());
 				break;
-			case RangerPluginInfo.ENTITY_TYPE_GDS:
-				pluginSvcVersionInfo.setGdsActiveVersion(lastKnownVersion);
-				pluginSvcVersionInfo.setGdsActivationTime(lastActivationTime);
-				pluginSvcVersionInfo.setGdsDownloadedVersion(downloadedVersion);
-				pluginSvcVersionInfo.setGdsDownloadTime(new Date().getTime());
-				break;
 		}
 
 		createOrUpdatePluginInfo(pluginSvcVersionInfo, entityType , httpCode, clusterName);
@@ -791,9 +785,14 @@ public class AssetMgr extends AssetMgrBase {
 						isTagVersionResetNeeded = rangerDaoManager.getXXService().findAssociatedTagService(pluginInfo.getServiceName()) == null;
 						break;
 					case RangerPluginInfo.ENTITY_TYPE_TAGS:
+						isTagVersionResetNeeded = false;
+						break;
 					case RangerPluginInfo.ENTITY_TYPE_ROLES:
+						isTagVersionResetNeeded = false;
+						break;
 					case RangerPluginInfo.ENTITY_TYPE_USERSTORE:
-					case RangerPluginInfo.ENTITY_TYPE_GDS:
+						isTagVersionResetNeeded = false;
+						break;
 					default:
 						isTagVersionResetNeeded = false;
 						break;
@@ -810,8 +809,7 @@ public class AssetMgr extends AssetMgrBase {
 			if ((isPolicyDownloadRequest(entityType) && (pluginInfo.getPolicyActiveVersion() == null || pluginInfo.getPolicyActiveVersion() == -1))
 					|| (isTagDownloadRequest(entityType) && (pluginInfo.getTagActiveVersion() == null || pluginInfo.getTagActiveVersion() == -1))
 					|| (isRoleDownloadRequest(entityType) && (pluginInfo.getRoleActiveVersion() == null || pluginInfo.getRoleActiveVersion() == -1))
-					|| (isUserStoreDownloadRequest(entityType) && (pluginInfo.getUserStoreActiveVersion() == null || pluginInfo.getUserStoreActiveVersion() == -1))
-					|| (isGdsDownloadRequest(entityType) && (pluginInfo.getGdsActiveVersion() == null || pluginInfo.getGdsActiveVersion() == -1))) {
+					|| (isUserStoreDownloadRequest(entityType) && (pluginInfo.getUserStoreActiveVersion() == null || pluginInfo.getUserStoreActiveVersion() == -1))) {
 				commitWork = new Runnable() {
 					@Override
 					public void run() {
@@ -882,15 +880,10 @@ public class AssetMgr extends AssetMgrBase {
 						// This is our best guess of when role may have been downloaded
 						pluginInfo.setRoleDownloadTime(pluginInfo.getRoleActivationTime());
 					}
-				} else if (isUserStoreDownloadRequest(entityType)) {
+				} else {
 					if (pluginInfo.getUserStoreDownloadTime() != null && pluginInfo.getUserStoreDownloadedVersion().equals(pluginInfo.getUserStoreActiveVersion())) {
 						// This is our best guess of when users and groups may have been downloaded
 						pluginInfo.setUserStoreDownloadTime(pluginInfo.getUserStoreActivationTime());
-					}
-				} else if (isGdsDownloadRequest(entityType)) {
-					if (pluginInfo.getGdsDownloadTime() != null && pluginInfo.getGdsDownloadedVersion().equals(pluginInfo.getGdsActiveVersion())) {
-						// This is our best guess of when GDS info may have been downloaded
-						pluginInfo.setGdsDownloadTime(pluginInfo.getGdsActivationTime());
 					}
 				}
 
@@ -998,7 +991,7 @@ public class AssetMgr extends AssetMgrBase {
 						dbObj.setRoleActivationTime(lastRoleActivationTime);
 						needsUpdating = true;
 					}
-				} else if (isUserStoreDownloadRequest(entityType)) {
+				} else {
 					if (dbObj.getUserStoreDownloadedVersion() == null || !dbObj.getUserStoreDownloadedVersion().equals(pluginInfo.getUserStoreDownloadedVersion())) {
 						dbObj.setUserStoreDownloadedVersion(pluginInfo.getUserStoreDownloadedVersion());
 						dbObj.setUserStoreDownloadTime(pluginInfo.getUserStoreDownloadTime());
@@ -1020,30 +1013,6 @@ public class AssetMgr extends AssetMgrBase {
 
 					if (lastUserStoreActivationTime != null && lastUserStoreActivationTime > 0 && (dbObj.getUserStoreActivationTime() == null || !dbObj.getUserStoreActivationTime().equals(lastUserStoreActivationTime))) {
 						dbObj.setUserStoreActivationTime(lastUserStoreActivationTime);
-						needsUpdating = true;
-					}
-				} else if (isGdsDownloadRequest(entityType)) {
-					if (dbObj.getGdsDownloadedVersion() == null || !dbObj.getGdsDownloadedVersion().equals(pluginInfo.getGdsDownloadedVersion())) {
-						dbObj.setGdsDownloadedVersion(pluginInfo.getGdsDownloadedVersion());
-						dbObj.setGdsDownloadTime(pluginInfo.getGdsDownloadTime());
-						needsUpdating = true;
-					}
-
-					Long lastKnownGdsVersion   = pluginInfo.getGdsActiveVersion();
-					Long lastGdsActivationTime = pluginInfo.getGdsActivationTime();
-
-					if (lastKnownGdsVersion != null && lastKnownGdsVersion == -1) {
-						dbObj.setGdsDownloadTime(pluginInfo.getGdsDownloadTime());
-						needsUpdating = true;
-					}
-
-					if (lastKnownGdsVersion != null && lastKnownGdsVersion > 0 && (dbObj.getGdsActiveVersion() == null || !dbObj.getGdsActiveVersion().equals(lastKnownGdsVersion))) {
-						dbObj.setGdsActiveVersion(lastKnownGdsVersion);
-						needsUpdating = true;
-					}
-
-					if (lastGdsActivationTime != null && lastGdsActivationTime > 0 && (dbObj.getGdsActivationTime() == null || !dbObj.getGdsActivationTime().equals(lastGdsActivationTime))) {
-						dbObj.setGdsActivationTime(lastGdsActivationTime);
 						needsUpdating = true;
 					}
 				}
@@ -1417,9 +1386,5 @@ public class AssetMgr extends AssetMgrBase {
 
 	private boolean isUserStoreDownloadRequest(int entityType) {
 		return entityType == RangerPluginInfo.ENTITY_TYPE_USERSTORE;
-	}
-
-	private boolean isGdsDownloadRequest(int entityType) {
-		return entityType == RangerPluginInfo.ENTITY_TYPE_GDS;
 	}
 }

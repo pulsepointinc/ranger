@@ -20,12 +20,12 @@
 package org.apache.ranger.authorization.hive.authorizer;
 
 import java.util.*;
-
 import org.apache.commons.collections.CollectionUtils;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.ranger.audit.model.AuthzAuditEvent;
 import org.apache.ranger.plugin.audit.RangerDefaultAuditHandler;
 import org.apache.ranger.plugin.model.RangerPolicy;
@@ -46,6 +46,7 @@ public class RangerHiveAuditHandler extends RangerDefaultAuditHandler {
 	public static final String  ACCESS_TYPE_TRUNCATE  = "TRUNCATE";
 	public static final String  ACTION_TYPE_METADATA_OPERATION = "METADATA OPERATION";
 	public static final String  URL_RESOURCE_TYPE = "url";
+
 	public static final String CONF_AUDIT_QUERY_REQUEST_SIZE = "xasecure.audit.solr.limit.query.req.size";
 	public static final int DEFAULT_CONF_AUDIT_QUERY_REQUEST_SIZE = Integer.MAX_VALUE;
 

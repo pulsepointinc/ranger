@@ -27,33 +27,31 @@ import org.apache.ranger.plugin.contextenricher.RangerTagForEval;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
 import org.apache.ranger.plugin.policyengine.RangerAccessResource;
 import org.apache.ranger.plugin.policyengine.RangerAccessResult;
-import org.apache.ranger.plugin.policyengine.gds.GdsAccessResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RangerAccessRequestUtil {
 	private static final Logger LOG = LoggerFactory.getLogger(RangerAccessRequestUtil.class);
 
-	public static final String KEY_CONTEXT_TAGS					= "TAGS";
-	public static final String KEY_CONTEXT_TAG_OBJECT			= "TAG_OBJECT";
-	public static final String KEY_CONTEXT_RESOURCE 			= "RESOURCE";
-	public static final String KEY_CONTEXT_REQUESTED_RESOURCES 	= "REQUESTED_RESOURCES";
-	public static final String KEY_CONTEXT_USERSTORE 			= "USERSTORE";
-	public static final String KEY_TOKEN_NAMESPACE 				= "token:";
-	public static final String KEY_USER 						= "USER";
-	public static final String KEY_OWNER 						= "OWNER";
-	public static final String KEY_ROLES 						= "ROLES";
-	public static final String KEY_CONTEXT_IS_ANY_ACCESS 		= "ISANYACCESS";
-	public static final String KEY_CONTEXT_ALL_ACCESSTYPE_GROUPS = "ALLACCESSTYPEGROUPS";
-	public static final String KEY_CONTEXT_ALL_ACCESSTYPES 		= "ALLACCESSTYPES";
-	public static final String KEY_CONTEXT_ALL_ACCESS_TYPE_RESULTS 	= "ALL_ACCESS_TYPE_RESULTS";
-	public static final String KEY_CONTEXT_ALL_ACCESS_TYPE_ACL_RESULTS 	= "ALL_ACCESS_TYPE_ACL_RESULTS";
+	public static final String KEY_CONTEXT_TAGS                         = "TAGS";
+	public static final String KEY_CONTEXT_TAG_OBJECT                   = "TAG_OBJECT";
+	public static final String KEY_CONTEXT_RESOURCE                     = "RESOURCE";
+	public static final String KEY_CONTEXT_REQUESTED_RESOURCES          = "REQUESTED_RESOURCES";
+	public static final String KEY_CONTEXT_USERSTORE                    = "USERSTORE";
+	public static final String KEY_TOKEN_NAMESPACE                      = "token:";
+	public static final String KEY_USER                                 = "USER";
+	public static final String KEY_OWNER                                = "OWNER";
+	public static final String KEY_ROLES                                = "ROLES";
+	public static final String KEY_CONTEXT_IS_ANY_ACCESS                = "ISANYACCESS";
+	public static final String KEY_CONTEXT_ALL_ACCESSTYPES 	            = "ALLACCESSTYPES";
+	public static final String KEY_CONTEXT_ALL_ACCESS_TYPE_RESULTS      = "ALL_ACCESS_TYPE_RESULTS";
+	public static final String KEY_CONTEXT_REQUEST                      = "_REQUEST";
+	public static final String KEY_CONTEXT_IS_REQUEST_PREPROCESSED      = "ISREQUESTPREPROCESSED";
+	public static final String KEY_CONTEXT_RESOURCE_ZONE_NAMES          = "RESOURCE_ZONE_NAMES";
+	public static final String KEY_CONTEXT_IS_SKIP_CHAINED_PLUGINS      = "_IS_SKIP_CHAINED_PLUGINS";
+	public static final String KEY_CONTEXT_ALL_ACCESSTYPE_GROUPS        = "ALLACCESSTYPEGROUPS";
+	public static final String KEY_CONTEXT_ALL_ACCESS_TYPE_ACL_RESULTS  = "ALL_ACCESS_TYPE_ACL_RESULTS";
 
-	public static final String KEY_CONTEXT_REQUEST 				= "_REQUEST";
-	public static final String KEY_CONTEXT_GDS_RESULT    = "_GDS_RESULT";
-	public static final String KEY_CONTEXT_IS_REQUEST_PREPROCESSED 	= "ISREQUESTPREPROCESSED";
-	public static final String KEY_CONTEXT_RESOURCE_ZONE_NAMES 		= "RESOURCE_ZONE_NAMES";
-	public static final String KEY_CONTEXT_IS_SKIP_CHAINED_PLUGINS 	= "_IS_SKIP_CHAINED_PLUGINS";
 
 	public static void setRequestTagsInContext(Map<String, Object> context, Set<RangerTagForEval> tags) {
 		if(CollectionUtils.isEmpty(tags)) {
@@ -138,7 +136,6 @@ public class RangerAccessRequestUtil {
 			ret.remove(KEY_CONTEXT_TAG_OBJECT);
 			ret.remove(KEY_CONTEXT_RESOURCE);
 			ret.remove(KEY_CONTEXT_REQUEST);
-			ret.remove(KEY_CONTEXT_GDS_RESULT);
 			ret.remove(KEY_CONTEXT_IS_ANY_ACCESS);
 			ret.remove(KEY_CONTEXT_ALL_ACCESSTYPES);
 			ret.remove(KEY_CONTEXT_ALL_ACCESSTYPE_GROUPS);
@@ -306,32 +303,6 @@ public class RangerAccessRequestUtil {
 					ret = (RangerAccessRequest) val;
 				} else {
 					LOG.error("getRequestFromContext(): expected RangerAccessRequest, but found " + val.getClass().getCanonicalName());
-				}
-			}
-		}
-
-		return ret;
-	}
-
-	public static void setGdsResultInContext(RangerAccessRequest request, GdsAccessResult result) {
-		Map<String, Object> context = request.getContext();
-
-		if (context != null) {
-			context.put(KEY_CONTEXT_GDS_RESULT, result);
-		}
-	}
-
-	public static GdsAccessResult getGdsResultFromContext(Map<String, Object> context) {
-		GdsAccessResult ret = null;
-
-		if (context != null) {
-			Object val = context.get(KEY_CONTEXT_GDS_RESULT);
-
-			if (val != null) {
-				if (val instanceof GdsAccessResult) {
-					ret = (GdsAccessResult) val;
-				} else {
-					LOG.error("getGdsResultFromContext(): expected RangerGdsAccessResult, but found " + val.getClass().getCanonicalName());
 				}
 			}
 		}

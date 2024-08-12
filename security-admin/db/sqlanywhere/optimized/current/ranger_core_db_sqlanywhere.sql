@@ -36,6 +36,8 @@ BEGIN
 END
 
 GO
+DROP VIEW IF EXISTS 'vx_principal';
+GO
 call dbo.removeForeignKeysAndTable('x_rms_mapping_provider')
 GO
 call dbo.removeForeignKeysAndTable('x_rms_resource_mapping')
@@ -517,7 +519,6 @@ create table dbo.x_service (
 	tag_service bigint DEFAULT NULL NULL,
 	tag_version bigint DEFAULT 0 NOT NULL,
 	tag_update_time datetime DEFAULT NULL NULL,
-	gds_service bigint DEFAULT NULL NULL,
 	CONSTRAINT x_service_def_PK_id PRIMARY KEY CLUSTERED(id),
 	CONSTRAINT x_service_UK_name UNIQUE NONCLUSTERED (name)
 )
@@ -531,6 +532,7 @@ CREATE TABLE dbo.x_security_zone(
 	version bigint DEFAULT NULL NULL,
 	name varchar(255) NOT NULL,
 	jsonData text DEFAULT NULL NULL,
+	gz_jsonData long binary DEFAULT NULL NULL,
 	description varchar(1024) DEFAULT NULL NULL,
 	CONSTRAINT x_security_zone_PK_id PRIMARY KEY CLUSTERED(id),
 	CONSTRAINT x_security_zone_UK_name UNIQUE NONCLUSTERED(name)
@@ -646,6 +648,7 @@ create table dbo.x_access_type_def (
 	name varchar(1024) DEFAULT NULL NULL,
 	label varchar(1024) DEFAULT NULL NULL,
 	rb_key_label varchar(1024) DEFAULT NULL NULL,
+	category smallint DEFAULT NULL NULL,
 	sort_order int DEFAULT 0 NULL,
 	datamask_options VARCHAR(1024) DEFAULT NULL NULL,
 	rowfilter_options VARCHAR(1024) DEFAULT NULL NULL,
@@ -1014,8 +1017,6 @@ CREATE TABLE dbo.x_service_version_info(
 	tag_update_time datetime DEFAULT NULL NULL,
 	role_version bigint NOT NULL DEFAULT 0,
 	role_update_time datetime DEFAULT NULL NULL,
-	gds_version bigint NOT NULL DEFAULT 0,
-	gds_update_time datetime DEFAULT NULL NULL,
 	version bigint NOT NULL DEFAULT 1,
 	CONSTRAINT x_service_version_info_PK_id PRIMARY KEY CLUSTERED(id)
 )
@@ -1573,8 +1574,6 @@ GO
 ALTER TABLE dbo.x_tag_resource_map ADD CONSTRAINT x_tag_res_map_FK_upd_by_id FOREIGN KEY(upd_by_id) REFERENCES dbo.x_portal_user (id)
 GO
 ALTER TABLE dbo.x_service ADD CONSTRAINT x_service_FK_tag_service FOREIGN KEY(tag_service) REFERENCES dbo.x_service (id)
-GO
-ALTER TABLE dbo.x_service ADD CONSTRAINT x_service_FK_gds_service FOREIGN KEY(gds_service) REFERENCES dbo.x_service (id)
 GO
 ALTER TABLE dbo.x_datamask_type_def ADD CONSTRAINT x_datamask_type_def_FK_def_id FOREIGN KEY(def_id) REFERENCES dbo.x_service_def (id)
 GO
@@ -2150,6 +2149,12 @@ CONSTRAINT x_rms_mapping_provider_UK_name UNIQUE(name)
 );
 GO
 
+CREATE VIEW dbo.vx_principal as
+  (SELECT u.user_name AS principal_name, 0 AS principal_type, u.status status, u.is_visible is_visible, u.other_attributes other_attributes, u.create_time create_time, u.update_time update_time, u.added_by_id added_by_id, u.upd_by_id upd_by_id FROM x_user u) UNION
+  (SELECT g.group_name principal_name, 1 AS principal_type, g.status status, g.is_visible is_visible, g.other_attributes other_attributes, g.create_time create_time, g.update_time update_time, g.added_by_id added_by_id, g.upd_by_id upd_by_id FROM x_group g) UNION
+  (SELECT r.name principal_name, 2 AS principal_name, 1 status, 1 is_visible, null other_attributes, r.create_time create_time, r.update_time update_time, r.added_by_id added_by_id, r.upd_by_id upd_by_id FROM x_role r);
+GO
+
 insert into x_portal_user (create_time,update_time,first_name,last_name,pub_scr_name,login_id,password,email,status) values (GETDATE(),GETDATE(),'Admin','','Admin','admin','ceb4f32325eda6142bd65215f4c0f371','',1)
 GO
 insert into x_portal_user_role (create_time,update_time,user_id,user_role,status) values (GETDATE(),GETDATE(),dbo.getXportalUIdByLoginId('admin'),'ROLE_SYS_ADMIN',1)
@@ -2282,7 +2287,15 @@ INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active
 GO
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('065',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
-INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('066',CURRENT_TIMESTAMP,'Ranger 3.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('066',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
+GO
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('068',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
+GO
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('069',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
+GO
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('072',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
+GO
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('073',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('DB_PATCHES',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
@@ -2416,6 +2429,7 @@ INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active
 GO
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10050',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
+<<<<<<< HEAD
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10051',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10052',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
@@ -2428,13 +2442,13 @@ INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active
 GO
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10056',CURRENT_TIMESTAMP,'Ranger 3.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
-INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10060',CURRENT_TIMESTAMP,'Ranger 3.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10060',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
-INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10061',CURRENT_TIMESTAMP,'Ranger 3.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10061',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
-INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10062',CURRENT_TIMESTAMP,'Ranger 3.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10062',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
-INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10063',CURRENT_TIMESTAMP,'Ranger 3.0.0',CURRENT_TIMESTAMP,'localhost','Y');
+INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('J10063',CURRENT_TIMESTAMP,'Ranger 2.5.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO
 INSERT INTO x_db_version_h (version,inst_at,inst_by,updated_at,updated_by,active) VALUES ('JAVA_PATCHES',CURRENT_TIMESTAMP,'Ranger 1.0.0',CURRENT_TIMESTAMP,'localhost','Y');
 GO

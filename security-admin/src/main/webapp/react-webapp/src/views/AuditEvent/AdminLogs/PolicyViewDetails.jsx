@@ -34,7 +34,7 @@ export function PolicyViewDetails(props) {
   const [loader, SetLoader] = useState(true);
   const [serviceDef, setServiceDef] = useState({});
   const { updateServices } = props;
-  let { allServiceDefs, gdsServiceDef } = cloneDeep(getServiceDef());
+  let { allServiceDefs } = cloneDeep(getServiceDef());
 
   useEffect(() => {
     if (props.paramsData.isRevert) {
@@ -78,15 +78,9 @@ export function PolicyViewDetails(props) {
     } catch (error) {
       console.error(`eventTime can not be undefined ${error}`);
     }
-
-    if (accesslogs?.data?.serviceType == "gds") {
-      accessLogsServiceDef = gdsServiceDef;
-    } else {
-      accessLogsServiceDef = allServiceDefs?.find((servicedef) => {
-        return servicedef.name == accesslogs?.data?.serviceType;
-      });
-    }
-
+    accessLogsServiceDef = allServiceDefs?.find((servicedef) => {
+      return servicedef.name == accesslogs?.data?.serviceType;
+    });
     setAccess(accesslogs?.data);
     setServiceDef(accessLogsServiceDef);
     SetLoader(false);

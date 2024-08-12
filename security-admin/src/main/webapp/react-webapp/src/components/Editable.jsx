@@ -359,8 +359,7 @@ const Editable = (props) => {
     onChange,
     options = [],
     conditionDefVal,
-    servicedefName,
-    isGDS
+    servicedefName
   } = props;
 
   const initialLoad = useRef(true);
@@ -594,32 +593,28 @@ const Editable = (props) => {
           val = (
             <h6>
               {policyConditionDisplayValue()}
-              {!isGDS && (
-                <Button
-                  className="mg-10 mx-auto d-block btn-mini"
-                  variant="outline-dark"
-                  size="sm"
-                  type="button"
-                >
-                  <i className="fa-fw fa fa-pencil"></i>
-                </Button>
-              )}
+              <Button
+                className="mg-10 mx-auto d-block btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-pencil"></i>
+              </Button>
             </h6>
           );
         } else {
           val = (
             <div className="text-center">
               <span className="editable-add-text">Add Conditions</span>
-              {!isGDS && (
-                <Button
-                  className="mg-10 mx-auto d-block btn-mini"
-                  variant="outline-dark"
-                  size="sm"
-                  type="button"
-                >
-                  <i className="fa-fw fa fa-plus"></i>
-                </Button>
-              )}
+              <Button
+                className="mg-10 mx-auto d-block btn-mini"
+                variant="outline-dark"
+                size="sm"
+                type="button"
+              >
+                <i className="fa-fw fa fa-plus"></i>
+              </Button>
             </div>
           );
         }

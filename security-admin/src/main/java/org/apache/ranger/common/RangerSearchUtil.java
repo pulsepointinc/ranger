@@ -79,8 +79,6 @@ public class RangerSearchUtil extends SearchUtil {
 		ret.setParam(SearchFilter.PLUGIN_ENTITY_TYPE, request.getParameter(SearchFilter.PLUGIN_ENTITY_TYPE));
 		ret.setParam(SearchFilter.PLUGIN_IP_ADDRESS, request.getParameter(SearchFilter.PLUGIN_IP_ADDRESS));
 		ret.setParam(SearchFilter.ZONE_NAME, request.getParameter(SearchFilter.ZONE_NAME));
-		ret.setParam(SearchFilter.ZONE_NAME_PARTIAL, request.getParameter(SearchFilter.ZONE_NAME_PARTIAL));
-		ret.setParam(SearchFilter.ZONE_ID, request.getParameter(SearchFilter.ZONE_ID));
 		ret.setParam(SearchFilter.TAG_SERVICE_ID, request.getParameter(SearchFilter.TAG_SERVICE_ID));
 		ret.setParam(SearchFilter.ROLE_NAME, request.getParameter(SearchFilter.ROLE_NAME));
 		ret.setParam(SearchFilter.ROLE_ID, request.getParameter(SearchFilter.ROLE_ID));
@@ -107,8 +105,6 @@ public class RangerSearchUtil extends SearchUtil {
 		ret.setParam(SearchFilter.TAG_DEF_ID, request.getParameter(SearchFilter.TAG_DEF_ID));
 		ret.setParam(SearchFilter.TAG_ID, request.getParameter(SearchFilter.TAG_ID));
 		ret.setParam(SearchFilter.CREATED_BY, request.getParameter(SearchFilter.CREATED_BY));
-		ret.setParam(SearchFilter.APPROVER, request.getParameter(SearchFilter.APPROVER));
-		ret.setParam(SearchFilter.SHARE_STATUS, request.getParameter(SearchFilter.SHARE_STATUS));
 
 		for (Map.Entry<String, String[]> e : request.getParameterMap().entrySet()) {
 			String name = e.getKey();
@@ -120,30 +116,6 @@ public class RangerSearchUtil extends SearchUtil {
 			}
 		}
 		ret.setParam(SearchFilter.RESOURCE_MATCH_SCOPE, request.getParameter(SearchFilter.RESOURCE_MATCH_SCOPE));
-
-		ret.setParam(SearchFilter.DATASET_NAME, request.getParameter(SearchFilter.DATASET_NAME));
-		ret.setParam(SearchFilter.DATASET_NAME_PARTIAL, request.getParameter(SearchFilter.DATASET_NAME_PARTIAL));
-		ret.setParam(SearchFilter.DATASET_ID, request.getParameter(SearchFilter.DATASET_ID));
-		ret.setParam(SearchFilter.PROJECT_NAME, request.getParameter(SearchFilter.PROJECT_NAME));
-		ret.setParam(SearchFilter.PROJECT_NAME_PARTIAL, request.getParameter(SearchFilter.PROJECT_NAME_PARTIAL));
-		ret.setParam(SearchFilter.PROJECT_ID, request.getParameter(SearchFilter.PROJECT_ID));
-		ret.setParam(SearchFilter.DATA_SHARE_NAME, request.getParameter(SearchFilter.DATA_SHARE_NAME));
-		ret.setParam(SearchFilter.DATA_SHARE_NAME_PARTIAL, request.getParameter(SearchFilter.DATA_SHARE_NAME_PARTIAL));
-		ret.setParam(SearchFilter.DATA_SHARE_ID, request.getParameter(SearchFilter.DATA_SHARE_ID));
-		ret.setParam(SearchFilter.EXCLUDE_DATASET_ID, request.getParameter(SearchFilter.EXCLUDE_DATASET_ID));
-		ret.setParam(SearchFilter.SHARED_RESOURCE_ID, request.getParameter(SearchFilter.SHARED_RESOURCE_ID));
-		ret.setParam(SearchFilter.SHARED_RESOURCE_NAME, request.getParameter(SearchFilter.SHARED_RESOURCE_NAME));
-		ret.setParam(SearchFilter.SHARED_RESOURCE_NAME_PARTIAL, request.getParameter(SearchFilter.SHARED_RESOURCE_NAME_PARTIAL));
-		ret.setParam(SearchFilter.PROFILE_NAME, request.getParameter(SearchFilter.PROFILE_NAME));
-		ret.setParam(SearchFilter.OWNER_NAME, request.getParameter(SearchFilter.OWNER_NAME));
-		ret.setParam(SearchFilter.OWNER_TYPE, request.getParameter(SearchFilter.OWNER_TYPE));
-		ret.setParam(SearchFilter.GDS_PERMISSION, request.getParameter(SearchFilter.GDS_PERMISSION));
-		ret.setParam(SearchFilter.CREATE_TIME_START, request.getParameter(SearchFilter.CREATE_TIME_START));
-		ret.setParam(SearchFilter.CREATE_TIME_END, request.getParameter(SearchFilter.CREATE_TIME_END));
-		ret.setParam(SearchFilter.UPDATE_TIME_START, request.getParameter(SearchFilter.UPDATE_TIME_START));
-		ret.setParam(SearchFilter.UPDATE_TIME_END, request.getParameter(SearchFilter.UPDATE_TIME_END));
-		ret.setParam(SearchFilter.RESOURCE_CONTAINS, request.getParameter(SearchFilter.RESOURCE_CONTAINS));
-		ret.setParam(SearchFilter.SHARED_WITH_ME, request.getParameter(SearchFilter.SHARED_WITH_ME));
 
 		extractCommonCriteriasForFilter(request, ret, sortFields);
 
@@ -282,9 +254,7 @@ public class RangerSearchUtil extends SearchUtil {
 		Query query = em.createQuery(queryStr + queryClause);
 		resolveQueryParams(query, searchCriteria, searchFields);
 
-		final boolean skipPagination = isCountQuery || Boolean.parseBoolean(searchCriteria.getParam(SearchFilter.RETRIEVE_ALL_PAGES));
-
-		if (!skipPagination) {
+		if (!isCountQuery) {
 			query.setFirstResult(searchCriteria.getStartIndex());
 			updateQueryPageSize(query, searchCriteria);
 		}
@@ -408,7 +378,7 @@ public class RangerSearchUtil extends SearchUtil {
 				Integer paramVal = restErrorUtil.parseInt(searchCriteria.getParam(searchField.getClientFieldName()),
 						"Invalid value for " + searchField.getClientFieldName(),
 						MessageEnums.INVALID_INPUT_DATA, null, searchField.getClientFieldName());
-
+				
 				Number intFieldValue = paramVal != null ? (Number) paramVal : null;
 				if (intFieldValue != null) {
 					if (searchField.getCustomCondition() == null) {

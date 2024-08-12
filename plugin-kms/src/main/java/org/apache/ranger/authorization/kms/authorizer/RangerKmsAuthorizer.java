@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 public class RangerKmsAuthorizer implements Runnable, KeyACLs {
 	  private static final Logger LOG = LoggerFactory.getLogger(RangerKmsAuthorizer.class);
-	private static final Logger PERF_KMSAUTH_REQUEST_LOG = RangerPerfTracer.getPerfLogger("kmsauth.request");
+	  private static final Logger PERF_KMSAUTH_REQUEST_LOG = RangerPerfTracer.getPerfLogger("kmsauth.request");
 
 	  private static final String KMS_USER_PRINCIPAL = "ranger.ks.kerberos.principal";
 	  private static final String KMS_USER_KEYTAB = "ranger.ks.kerberos.keytab";

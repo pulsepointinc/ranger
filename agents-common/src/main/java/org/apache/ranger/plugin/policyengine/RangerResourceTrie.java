@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -189,32 +190,29 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
         }
     }
 
+    public Set<T> getInheritedEvaluators() {
+        return inheritedEvaluators;
+    }
+
     public Set<T> getEvaluatorsForResource(Object resource) {
         return getEvaluatorsForResource(resource, ResourceElementMatchingScope.SELF);
     }
 
+    @SuppressWarnings("unchecked")
     public Set<T> getEvaluatorsForResource(Object resource, ResourceElementMatchingScope scope) {
-        EvalCollector<T> ret = new EvalCollector<>();
+        if (resource instanceof String) {
+            return getEvaluatorsForResource((String) resource, scope);
+        } else if (resource instanceof Collection) {
+            Collection<String> resources = (Collection<String>) resource;
 
-        traverse(resource, scope, ret);
+            if (CollectionUtils.isEmpty(resources)) {  // treat empty collection same as empty-string
+                return getEvaluatorsForResource("", scope);
+            } else {
+                return getEvaluatorsForResources(resources, scope);
+            }
+        }
 
-        return ret.getResult();
-    }
-
-    public Set<T> getEvaluatorsForResource(Object resource, ResourceElementMatchingScope scope, Set<T> filter) {
-        EvalSubsetCollector<T> ret = new EvalSubsetCollector<>(filter);
-
-        traverse(resource, scope, ret);
-
-        return ret.getResult();
-    }
-
-    public int getEvaluatorsCountForResource(Object resource, ResourceElementMatchingScope scope) {
-        EvalCountCollector<T> ret = new EvalCountCollector<>();
-
-        traverse(resource, scope, ret);
-
-        return ret.getResult();
+        return null;
     }
 
     public void add(RangerPolicyResource resource, T evaluator) {
@@ -596,38 +594,19 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
         int prefixLen = getNonWildcardPrefixLength(str);
 
         return (prefixLen < str.length()) ? str.substring(0, prefixLen) : str;
-
     }
 
-    public void traverse(Object resource, ResourceElementMatchingScope scope, TraverseMatchHandler<T> handler) {
-        if (resource instanceof String) {
-            traverse((String) resource, scope, handler);
-        } else if (resource instanceof Collection) {
-            Collection<String> resources = (Collection<String>) resource;
 
-            if (CollectionUtils.isEmpty(resources)) {  // treat empty collection same as empty-string
-                traverse("", scope, handler);
-            } else {
-                traverse(resources, scope, handler);
-            }
-        }
-    }
 
-    public void traverse(Collection<String> resources, ResourceElementMatchingScope scope, TraverseMatchHandler<T> handler) {
-        for (String resource : resources) {
-            traverse(resource, scope, handler);
-        }
-    }
-
-    public void traverse(String resource, ResourceElementMatchingScope scope, TraverseMatchHandler<T> handler) {
+    private Set<T> getEvaluatorsForResource(String resource, ResourceElementMatchingScope scope) {
         if(LOG.isDebugEnabled()) {
-            LOG.debug("==> RangerResourceTrie.traverse(" + resource + ", " + scope + ")");
+            LOG.debug("==> RangerResourceTrie.getEvaluatorsForResource(" + resource + ", " + scope + ")");
         }
 
         RangerPerfTracer perf = null;
 
         if(RangerPerfTracer.isPerfTraceEnabled(PERF_TRIE_OP_LOG)) {
-            perf = RangerPerfTracer.getPerfTracer(PERF_TRIE_OP_LOG, "RangerResourceTrie.traverse(resource=" + resource + ")");
+            perf = RangerPerfTracer.getPerfTracer(PERF_TRIE_OP_LOG, "RangerResourceTrie.getEvaluatorsForResource(resource=" + resource + ")");
         }
 
         TrieNode<T> curr   = root;
@@ -636,14 +615,14 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
         final int   len    = resource.length();
         int         i      = 0;
 
-        handler.process(inheritedEvaluators);
+        Set<T>      accumulatedEvaluators = new HashSet<>();
 
         while (i < len) {
             if (!isOptimizedForSpace) {
                 curr.setupIfNeeded(parent);
             } else {
-                if (handler.process(curr.getWildcardEvaluators())) {
-                    break;
+                if (curr.getWildcardEvaluators() != null) {
+                    accumulatedEvaluators.addAll(curr.getWildcardEvaluators());
                 }
             }
 
@@ -667,30 +646,39 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
         if (!isOptimizedForSpace) {
             curr.setupIfNeeded(parent);
         } else {
-            handler.process(curr.getWildcardEvaluators());
+            if (curr.getWildcardEvaluators() != null) {
+                accumulatedEvaluators.addAll(curr.getWildcardEvaluators());
+            }
         }
 
         boolean isSelfMatch = (i == len);
+        Set<T>  ret;
 
         if (!isOptimizedForSpace) {
-            handler.process(isSelfMatch ? curr.getEvaluators() : curr.getWildcardEvaluators());
+            ret = isSelfMatch ? curr.getEvaluators() : curr.getWildcardEvaluators();
         } else {
             if (isSelfMatch) {
-                handler.process(curr.getEvaluators());
+                if (curr.getEvaluators() != null) {
+                    accumulatedEvaluators.addAll(curr.getEvaluators());
+                }
             }
+            ret = accumulatedEvaluators;
         }
+
+        final boolean includeChildEvaluators = scope == ResourceElementMatchingScope.SELF_OR_CHILD || scope == ResourceElementMatchingScope.SELF_OR_PREFIX;
+        final Set<T>  childEvaluators        = includeChildEvaluators ? new HashSet<>() : null;
 
         if (scope == ResourceElementMatchingScope.SELF_OR_CHILD) {
             final boolean resourceEndsWithSep = resource.charAt(resource.length() - 1) == separatorChar;
 
             if (isSelfMatch) { // resource == path(curr)
                 if (resourceEndsWithSep) { // ex: resource=/tmp/
-                    curr.getChildren().values().forEach(c -> c.collectChildEvaluators(separatorChar, 0, handler));
+                    curr.getChildren().values().stream().forEach(c -> c.collectChildEvaluators(separatorChar, 0, childEvaluators));
                 } else { // ex: resource=/tmp
                     curr = curr.getChild(separatorChar);
 
                     if (curr != null) {
-                        curr.collectChildEvaluators(separatorChar, 1, handler);
+                        curr.collectChildEvaluators(separatorChar, 1, childEvaluators);
                     }
                 }
             } else if (child != null) { // resource != path(child) ex: (resource=/tmp, path(child)=/tmp/test.txt or path(child)=/tmpdir)
@@ -699,21 +687,31 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
 
                 if (isPrefixMatch) {
                     if (resourceEndsWithSep) { // ex: resource=/tmp/
-                        child.collectChildEvaluators(separatorChar, remainingLen, handler);
+                        child.collectChildEvaluators(separatorChar, remainingLen, childEvaluators);
                     } else if (child.getStr().charAt(remainingLen) == separatorChar) { //  ex: resource=/tmp
-                        child.collectChildEvaluators(separatorChar, remainingLen + 1, handler);
+                        child.collectChildEvaluators(separatorChar, remainingLen + 1, childEvaluators);
                     }
                 }
             }
         } else if (scope == ResourceElementMatchingScope.SELF_OR_PREFIX) {
-            curr.collectChildEvaluators(resource, i, handler);
+            curr.collectChildEvaluators(resource, i, childEvaluators);
+        }
+
+        if (CollectionUtils.isNotEmpty(childEvaluators)) {
+            if (CollectionUtils.isNotEmpty(ret)) {
+                childEvaluators.addAll(ret);
+            }
+
+            ret = childEvaluators;
         }
 
         RangerPerfTracer.logAlways(perf);
 
         if(LOG.isDebugEnabled()) {
-            LOG.debug("<== RangerResourceTrie.traverse(" + resource + ", " + scope + "): evaluators=" + handler);
+            LOG.debug("<== RangerResourceTrie.getEvaluatorsForResource(" + resource + ", " + scope + "): evaluators=" + (ret == null ? null : Arrays.deepToString(ret.toArray())));
         }
+
+        return ret;
     }
 
     private TrieNode<T> getNodeForResource(String resource) {
@@ -757,6 +755,53 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
         }
 
         return curr;
+    }
+
+    private Set<T> getEvaluatorsForResources(Collection<String> resources, ResourceElementMatchingScope scope) {
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("==> RangerResourceTrie.getEvaluatorsForResources(" + resources + ")");
+        }
+
+        Set<T>       ret           = null;
+        Map<Long, T> evaluatorsMap = null;
+
+        for (String resource : resources) {
+            Set<T> resourceEvaluators = getEvaluatorsForResource(resource, scope);
+
+            if (CollectionUtils.isEmpty(resourceEvaluators)) {
+                continue;
+            }
+
+            if (evaluatorsMap == null) {
+                if (ret == null) { // first resource: don't create map yet
+                    ret = resourceEvaluators;
+                } else if (ret != resourceEvaluators) { // if evaluator list is same as earlier resources, retain the list, else create a map
+                    evaluatorsMap = new HashMap<>();
+
+                    for (T evaluator : ret) {
+                        evaluatorsMap.put(evaluator.getId(), evaluator);
+                    }
+
+                    ret = null;
+                }
+            }
+
+            if (evaluatorsMap != null) {
+                for (T evaluator : resourceEvaluators) {
+                    evaluatorsMap.put(evaluator.getId(), evaluator);
+                }
+            }
+        }
+
+        if (ret == null && evaluatorsMap != null) {
+            ret = new HashSet<>(evaluatorsMap.values());
+        }
+
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("<== RangerResourceTrie.getEvaluatorsForResources(" + resources + "): evaluatorCount=" + (ret == null ? 0 : ret.size()));
+        }
+
+        return ret;
     }
 
     @Override
@@ -1184,7 +1229,7 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
             }
         }
 
-        void collectChildEvaluators(Character sep, int startIdx, TraverseMatchHandler<U> handler) {
+        void collectChildEvaluators(Character sep, int startIdx, Set<U> childEvaluators) {
             if (!isOptimizedForSpace) {
                 setupIfNeeded(getParent());
             }
@@ -1193,24 +1238,30 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
 
             if (sepPos == -1) { // ex: startIdx=5, path(str)=/tmp/test, path(a child) could be: /tmp/test.txt, /tmp/test/, /tmp/test/a, /tmp/test/a/b
                 if (isOptimizedForSpace) {
-                    handler.process(this.wildcardEvaluators);
+                    if (this.wildcardEvaluators != null) {
+                        childEvaluators.addAll(this.wildcardEvaluators);
+                    }
+                }
+                if (this.evaluators != null) {
+                    childEvaluators.addAll(this.evaluators);
                 }
 
-                handler.process(this.evaluators);
-
-                children.values().forEach(c -> c.collectChildEvaluators(sep, 0, handler));
+                children.values().stream().forEach(c -> c.collectChildEvaluators(sep, 0, childEvaluators));
             } else if (sepPos == (str.length() - 1)) { // ex: str=/tmp/test/, startIdx=5
                 if (isOptimizedForSpace) {
-                    handler.process(this.wildcardEvaluators);
+                    if (this.wildcardEvaluators != null) {
+                        childEvaluators.addAll(this.wildcardEvaluators);
+                    }
                 }
-
-                handler.process(this.evaluators);
+                if (this.evaluators != null) {
+                    childEvaluators.addAll(this.evaluators);
+                }
             }
         }
 
-        void collectChildEvaluators(String resource, int startIndex, TraverseMatchHandler<U> handler) {
+        void collectChildEvaluators(String resource, int startIndex, Set<U> childEvaluators) {
             if (startIndex == resource.length()) {
-                collectChildEvaluators(handler);
+                collectChildEvaluators(childEvaluators);
             } else if (startIndex < resource.length()) {
                 Character   startChar = getLookupChar(resource, startIndex);
                 TrieNode<U> childNode = children.get(startChar);
@@ -1224,20 +1275,25 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
                     int lenToMatch = Math.min(resource.length() - startIndex, childStr.length());
 
                     if (resource.regionMatches(optIgnoreCase, startIndex, childStr, 0, lenToMatch)) {
-                        handler.process(childNode.wildcardEvaluators);
-                        handler.process(childNode.evaluators);
+                        if (childNode.wildcardEvaluators != null) {
+                            childEvaluators.addAll(childNode.wildcardEvaluators);
+                        }
+
+                        if (childNode.evaluators != null) {
+                            childEvaluators.addAll(childNode.evaluators);
+                        }
 
                         if (resource.length() == (startIndex + lenToMatch)) {
-                            childNode.collectChildEvaluators(handler);
+                            childNode.collectChildEvaluators(childEvaluators);
                         } else {
-                            childNode.children.values().forEach(c -> c.collectChildEvaluators(resource, startIndex + childStr.length(), handler));
+                            childNode.children.values().stream().forEach(c -> c.collectChildEvaluators(resource, startIndex + childStr.length(), childEvaluators));
                         }
                     }
                 }
             }
         }
 
-        private void collectChildEvaluators(TraverseMatchHandler<U> childEvaluators) {
+        private void collectChildEvaluators(Set<U> childEvaluators) {
             Stack<TrieNode<U>> nodes = new Stack<>();
 
             nodes.addAll(children.values());
@@ -1249,8 +1305,13 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
                     childNode.setupIfNeeded(childNode.getParent());
                 }
 
-                childEvaluators.process(childNode.wildcardEvaluators);
-                childEvaluators.process(childNode.evaluators);
+                if (childNode.wildcardEvaluators != null) {
+                    childEvaluators.addAll(childNode.wildcardEvaluators);
+                }
+
+                if (childNode.evaluators != null) {
+                    childEvaluators.addAll(childNode.evaluators);
+                }
 
                 nodes.addAll(childNode.children.values());
             }
@@ -1318,95 +1379,6 @@ public class RangerResourceTrie<T extends RangerResourceEvaluator> {
 
                 child.toString(nodeValue, sb);
             }
-        }
-    }
-
-    public interface TraverseMatchHandler<T> {
-        // return: true  - stop traverse, processing is complete
-        //         false - continue traverse, processing is not complete yet
-        boolean process(Set<T> evaluators);
-    }
-
-    public static class EvalCollector<T> implements TraverseMatchHandler<T> {
-        private Set<T>  result;
-        private boolean isOwnedResult = false;
-
-        public EvalCollector() {
-            this.result = null;
-        }
-
-        public Set<T> getResult() {
-            return result;
-        }
-
-        @Override
-        public boolean process(Set<T> evaluators) {
-            if (evaluators != null && !evaluators.isEmpty()) {
-                if (result == null) {
-                    result = evaluators;
-                } else {
-                    if (!isOwnedResult) {
-                        result = new HashSet<>(result);
-
-                        isOwnedResult = true;
-                    }
-
-                    result.addAll(evaluators);
-                }
-            }
-
-            return false; // continue traverse
-        }
-    }
-
-    public static class EvalSubsetCollector<T> implements TraverseMatchHandler<T> {
-        private final Set<T> filter;
-        private       Set<T> result;
-
-        public EvalSubsetCollector(Set<T> filter) {
-            this.filter = filter == null ? Collections.emptySet() : filter;
-            this.result = null;
-        }
-
-        public Set<T> getResult() {
-            return result;
-        }
-
-        @Override
-        public boolean process(Set<T> evaluators) {
-            if (evaluators != null && !evaluators.isEmpty()) {
-                if (result == null) {
-                    result = new HashSet<>();
-                }
-
-                intersect(filter, evaluators, result);
-            }
-
-            return result != null && (filter.size() == result.size()); // stop traverse once the result includes all entries in the filter
-        }
-
-        private static <T> void intersect(Set<T> a, Set<T> b, Set<T> result) {
-            Set<T> smaller = a.size() < b.size() ? a : b;
-            Set<T> larger  = smaller == a ? b : a;
-
-            smaller.forEach(item -> { if (larger.contains(item)) result.add(item);  });
-        }
-    }
-
-    public static class EvalCountCollector<T> implements TraverseMatchHandler<T> {
-        private int result = 0;
-
-        public int getResult() {
-            return result;
-        }
-
-        @Override
-        public boolean process(Set<T> evaluators) {
-            if (evaluators != null) {
-                result += evaluators.size();
-            }
-
-            return false; // continue traverse
         }
     }
 }

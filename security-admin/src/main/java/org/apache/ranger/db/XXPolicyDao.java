@@ -18,7 +18,6 @@
 package org.apache.ranger.db;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -293,7 +292,6 @@ public class XXPolicyDao extends BaseDao<XXPolicy> {
 		if (guid == null) {
 			return null;
 		}
-
 		try {
 			if (StringUtils.isNotBlank(serviceName)) {
 				if (StringUtils.isNotBlank(zoneName)) {
@@ -417,54 +415,5 @@ public class XXPolicyDao extends BaseDao<XXPolicy> {
 		} catch (NoResultException e) {
 			return new ArrayList<XXPolicy>();
 		}
-	}
-
-	public List<XXPolicy> findByServiceType(String serviceType) {
-		List<XXPolicy> ret = Collections.emptyList();
-
-		if (serviceType != null && !serviceType.isEmpty()) {
-			try {
-				ret = getEntityManager().createNamedQuery("XXPolicy.findByServiceType", tClass)
-				                        .setParameter("serviceType", serviceType)
-				                        .getResultList();
-			} catch (NoResultException e) {
-			    // ignore
-			}
-		}
-
-		return ret;
-	}
-
-	public XXPolicy getProjectPolicy(Long projectId, Long policyId) {
-		XXPolicy ret = null;
-
-		if (projectId != null && policyId != null) {
-			try {
-				ret = getEntityManager().createNamedQuery("XXPolicy.getProjectPolicy", tClass)
-				                        .setParameter("projectId", projectId)
-				                        .setParameter("policyId", policyId)
-				                        .getSingleResult();
-			} catch (NoResultException e) {
-				// ignore
-			}
-		}
-
-		return ret;
-	}
-
-	public List<XXPolicy> getProjectPolicies(Long projectId) {
-		List<XXPolicy> ret = Collections.emptyList();
-
-		if (projectId != null) {
-			try {
-				ret = getEntityManager().createNamedQuery("XXPolicy.getProjectPolicies", tClass)
-				                        .setParameter("projectId", projectId)
-				                        .getResultList();
-			} catch (NoResultException e) {
-				// ignore
-			}
-		}
-
-		return ret;
 	}
 }

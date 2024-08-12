@@ -39,7 +39,18 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,8 +60,8 @@ import static org.apache.ranger.plugin.util.RangerCommonConstants.*;
 public final class RangerRequestScriptEvaluator {
 	private static final Logger LOG = LoggerFactory.getLogger(RangerRequestScriptEvaluator.class);
 
-	private static final Logger PERF_POLICY_CONDITION_SCRIPT_TOJSON         = RangerPerfTracer.getPerfLogger("policy.condition.script.tojson");
-	private static final Logger PERF_POLICY_CONDITION_SCRIPT_EVAL           = RangerPerfTracer.getPerfLogger("policy.condition.script.eval");
+	private static final Logger    PERF_POLICY_CONDITION_SCRIPT_TOJSON         = RangerPerfTracer.getPerfLogger("policy.condition.script.tojson");
+	private static final Logger    PERF_POLICY_CONDITION_SCRIPT_EVAL           = RangerPerfTracer.getPerfLogger("policy.condition.script.eval");
 	private static final String TAG_ATTR_DATE_FORMAT_PROP                   = "ranger.plugin.tag.attr.additional.date.formats";
 	private static final String TAG_ATTR_DATE_FORMAT_SEPARATOR              = "||";
 	private static final String TAG_ATTR_DATE_FORMAT_SEPARATOR_REGEX        = "\\|\\|";
@@ -1318,23 +1329,23 @@ public final class RangerRequestScriptEvaluator {
 
 
 	public void logDebug(Object msg) {
-		LOG.debug(Objects.toString(msg));
+		LOG.debug("", msg);
 	}
 
 	public void logInfo(Object msg) {
-		LOG.info(Objects.toString(msg));
+		LOG.info("", msg);
 	}
 
 	public void logWarn(Object msg) {
-		LOG.warn(Objects.toString(msg));
+		LOG.warn("", msg);
 	}
 
 	public void logError(Object msg) {
-		LOG.error(Objects.toString(msg));
+		LOG.error("", msg);
 	}
 
 	public void logFatal(Object msg) {
-		LOG.error(Objects.toString(msg));
+		LOG.error("", msg);
 	}
 
 	public static class UserGroupsAttributes {

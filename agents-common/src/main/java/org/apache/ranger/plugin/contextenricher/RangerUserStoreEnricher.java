@@ -27,12 +27,12 @@ import org.apache.ranger.plugin.util.DownloadTrigger;
 import org.apache.ranger.plugin.util.RangerUserStore;
 import org.apache.ranger.plugin.util.RangerPerfTracer;
 import org.apache.ranger.plugin.util.RangerAccessRequestUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.Timer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RangerUserStoreEnricher extends RangerAbstractContextEnricher {
     private static final Logger LOG                    = LoggerFactory.getLogger(RangerUserStoreEnricher.class);

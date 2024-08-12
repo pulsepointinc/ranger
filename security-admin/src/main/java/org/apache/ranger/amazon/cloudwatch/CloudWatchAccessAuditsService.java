@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 import org.apache.ranger.audit.model.AuthzAuditEvent;
 import org.apache.ranger.audit.provider.MiscUtil;
 import org.apache.ranger.common.JSONUtil;
@@ -37,8 +38,6 @@ import org.apache.ranger.entity.XXServiceDef;
 import org.apache.ranger.view.VXAccessAudit;
 import org.apache.ranger.view.VXAccessAuditList;
 import org.apache.ranger.view.VXLong;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,7 @@ import com.amazonaws.services.logs.model.FilteredLogEvent;
 @Service
 @Scope("singleton")
 public class CloudWatchAccessAuditsService extends org.apache.ranger.AccessAuditsService {
-	private static final Logger LOGGER = LoggerFactory.getLogger(CloudWatchAccessAuditsService.class);
+	private static final Logger LOGGER = Logger.getLogger(CloudWatchAccessAuditsService.class);
 
 	@Autowired
 	CloudWatchMgr cloudWatchMgr;
@@ -281,16 +280,6 @@ public class CloudWatchAccessAuditsService extends org.apache.ranger.AccessAudit
 		value = auditEvent.getTags();
 		if (value != null) {
 			accessAudit.setTags(value.toString());
-		}
-
-		value = auditEvent.getDatasets();
-		if (value != null) {
-			accessAudit.setDatasets(value.toString());
-		}
-
-		value = auditEvent.getProjects();
-		if (value != null) {
-			accessAudit.setProjects(value.toString());
 		}
 
 		return accessAudit;

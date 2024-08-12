@@ -29,7 +29,6 @@ import org.apache.ranger.authorization.utils.StringUtil;
 import org.apache.ranger.plugin.contextenricher.RangerTagForEval;
 import org.apache.ranger.plugin.model.RangerPolicy;
 import org.apache.ranger.plugin.model.RangerServiceDef;
-import org.apache.ranger.plugin.policyengine.gds.GdsAccessResult;
 import org.apache.ranger.plugin.policyevaluator.RangerPolicyEvaluator;
 import org.apache.ranger.plugin.policyresourcematcher.RangerPolicyResourceMatcher.MatchType;
 import org.apache.ranger.plugin.service.RangerDefaultRequestProcessor;
@@ -654,8 +653,6 @@ public class RangerPolicyEngineImpl implements RangerPolicyEngine {
 			}
 		}
 
-		updateFromGdsResult(ret);
-
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("<== RangerPolicyEngineImpl.zoneAwareAccessEvaluationWithNoAudit(" + request + ", policyType =" + policyType + "): " + ret);
 		}
@@ -774,8 +771,6 @@ public class RangerPolicyEngineImpl implements RangerPolicyEngine {
 					ret.setIsAllowed(false);
 				} else if (isAllowedByTags) {
 					ret.setIsAllowed(true);
-				} else {
-					updateFromGdsResult(ret);
 				}
 				if (!ret.getIsAllowed() &&
 						!getIsFallbackSupported()) {
@@ -1140,42 +1135,6 @@ public class RangerPolicyEngineImpl implements RangerPolicyEngine {
 
 	private boolean getIsFallbackSupported() {
 		return policyEngine.getPluginContext().getConfig().getIsFallbackSupported();
-	}
-
-	private void updateFromGdsResult(RangerAccessResult result) {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("==> updateFromGdsResult(result={})", result);
-		}
-
-		RangerAccessRequest request   = result.getAccessRequest();
-		GdsAccessResult     gdsResult = request != null ? RangerAccessRequestUtil.getGdsResultFromContext(request.getContext()) : null;
-
-		if (gdsResult != null) {
-			if (result.getPolicyType() == RangerPolicy.POLICY_TYPE_ACCESS) {
-				if (!result.getIsAccessDetermined() && gdsResult.getIsAllowed()) {
-					result.setIsAllowed(true);
-					result.setIsAccessDetermined(true);
-					result.setPolicyId(gdsResult.getPolicyId());
-					result.setPolicyVersion(gdsResult.getPolicyVersion());
-					result.setPolicyPriority(RangerPolicy.POLICY_PRIORITY_NORMAL);
-				}
-			}
-
-			if (!result.getIsAuditedDetermined() && gdsResult.getIsAudited()) {
-				result.setIsAudited(true);
-			}
-
-			result.setDatasets(gdsResult.getDatasets());
-			result.setProjects(gdsResult.getProjects());
-		} else {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("updateFromGdsResult(): no GdsAccessResult found in request context({})", request);
-			}
-		}
-
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("<== updateFromGdsResult(result={})", result);
-		}
 	}
 
 	private static class ServiceConfig {

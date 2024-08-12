@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 public class HdfsResourceMgr {
 
-	private static final Logger LOG 	= LoggerFactory.getLogger(HdfsResourceMgr.class);
+	private static final Logger LOG = LoggerFactory.getLogger(HdfsResourceMgr.class);
 	public static final String PATH	= "path";
 
 	public static Map<String, Object> connectionTest(String serviceName, Map<String, String> configs) throws Exception {

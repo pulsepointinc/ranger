@@ -23,9 +23,8 @@ import static org.apache.ranger.audit.destination.AmazonCloudWatchAuditDestinati
 import static org.apache.ranger.audit.destination.AmazonCloudWatchAuditDestination.PROP_REGION;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.apache.ranger.common.PropertiesUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.amazonaws.services.logs.AWSLogs;
@@ -38,7 +37,7 @@ import com.amazonaws.services.logs.AWSLogsClientBuilder;
 @Component
 public class CloudWatchMgr {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CloudWatchMgr.class);
+	private static final Logger LOGGER = Logger.getLogger(CloudWatchMgr.class);
 
 	private AWSLogs client = null;
 	private String regionName;
@@ -51,7 +50,7 @@ public class CloudWatchMgr {
 					try {
 						client = newClient();
 					} catch (Throwable t) {
-						LOGGER.error("Can't connect to CloudWatch region: " + regionName, t);
+						LOGGER.fatal("Can't connect to CloudWatch region: " + regionName, t);
 					}
 				}
 			}

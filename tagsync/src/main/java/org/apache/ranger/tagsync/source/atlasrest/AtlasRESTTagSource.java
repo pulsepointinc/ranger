@@ -61,7 +61,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -227,7 +226,7 @@ public class AtlasRESTTagSource extends AbstractTagSource implements Runnable {
 		if (CollectionUtils.isNotEmpty(rangerAtlasEntities)) {
 			if (LOG.isDebugEnabled()) {
 				for (RangerAtlasEntityWithTags element : rangerAtlasEntities) {
-					LOG.debug(Objects.toString(element));
+					LOG.debug("", element);
 				}
 			}
 			Map<String, ServiceTags> serviceTagsMap = AtlasNotificationMapper.processAtlasEntities(rangerAtlasEntities);

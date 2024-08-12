@@ -40,17 +40,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RangerPolicyAdminCache {
-
+	
 	static class RangerPolicyAdminWrapper {
 		final RangerPolicyAdmin policyAdmin;
-		final Lock              lock = new ReentrantLock();
+		final Lock lock = new ReentrantLock();
 
 		RangerPolicyAdminWrapper(RangerPolicyAdmin policyAdmin) {
 			this.policyAdmin = policyAdmin;
 		}
+
 		RangerPolicyAdmin getPolicyAdmin() {
 			return policyAdmin;
 		}
+
 		Lock getLock() {
 			return lock;
 		}

@@ -22,10 +22,10 @@ import java.util.List;
 import org.apache.ranger.db.RangerDaoManager;
 import org.apache.ranger.entity.XXService;
 import org.apache.ranger.entity.XXServiceVersionInfo;
-
-import org.apache.ranger.util.CLIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.ranger.util.CLIUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

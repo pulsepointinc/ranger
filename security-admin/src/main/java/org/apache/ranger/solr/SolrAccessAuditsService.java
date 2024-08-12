@@ -33,7 +33,6 @@ import org.apache.ranger.entity.XXServiceDef;
 import org.apache.ranger.view.VXAccessAudit;
 import org.apache.ranger.view.VXAccessAuditList;
 import org.apache.ranger.view.VXLong;
-import org.apache.ranger.plugin.util.JsonUtilsV2;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -245,22 +244,6 @@ public class SolrAccessAuditsService extends AccessAuditsService {
 		value = doc.getFieldValue("tags");
 		if (value != null) {
 			accessAudit.setTags(value.toString());
-		}
-		value = doc.getFieldValue("datasets");
-		if (value != null) {
-			try {
-				accessAudit.setDatasets(JsonUtilsV2.nonSerializableObjToJson(value));
-			} catch (Exception e) {
-				LOGGER.warn("Failed to convert datasets to json", e);
-			}
-		}
-		value = doc.getFieldValue("projects");
-		if (value != null) {
-			try {
-				accessAudit.setProjects(JsonUtilsV2.nonSerializableObjToJson(value));
-			} catch (Exception e) {
-				LOGGER.warn("Failed to convert projects to json", e);
-			}
 		}
 		return accessAudit;
 	}

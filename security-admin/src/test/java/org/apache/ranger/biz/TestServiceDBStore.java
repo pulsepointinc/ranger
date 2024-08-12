@@ -2067,8 +2067,6 @@ public class TestServiceDBStore {
 		xServiceVersionInfo.setPolicyUpdateTime(new Date());
 		xServiceVersionInfo.setTagVersion(1L);
 		xServiceVersionInfo.setTagUpdateTime(new Date());
-		xServiceVersionInfo.setGdsVersion(1L);
-		xServiceVersionInfo.setGdsUpdateTime(new Date());
 
 		String serviceName = "HDFS_1";
 		Long lastKnownVersion = 1l;

@@ -34,6 +34,7 @@ import java.util.TimeZone;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.apache.ranger.common.PropertiesUtil;
 import org.apache.ranger.common.SearchCriteria;
 import org.apache.ranger.common.SearchField;
@@ -41,8 +42,6 @@ import org.apache.ranger.common.SearchField.SEARCH_TYPE;
 import org.apache.ranger.common.SortField;
 import org.apache.ranger.common.StringUtil;
 import org.apache.solr.client.solrj.util.ClientUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +52,7 @@ import com.amazonaws.services.logs.model.FilteredLogEvent;
 
 @Component
 public class CloudWatchUtil {
-	private static final Logger LOGGER = LoggerFactory.getLogger(CloudWatchUtil.class);
+	private static final Logger LOGGER = Logger.getLogger(CloudWatchUtil.class);
 
 	@Autowired
 	StringUtil stringUtil;

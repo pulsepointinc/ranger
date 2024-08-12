@@ -144,8 +144,6 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
-import static org.apache.ranger.plugin.store.EmbeddedServiceDefsUtil.EMBEDDED_SERVICEDEF_GDS_NAME;
-
 
 @Path("plugins")
 @Component
@@ -241,7 +239,7 @@ public class ServiceREST {
 
 	@Autowired
 	RangerTransactionSynchronizationAdapter rangerTransactionSynchronizationAdapter;
-
+	
 	private RangerPolicyEngineOptions delegateAdminOptions;
 	private RangerPolicyEngineOptions policySearchAdminOptions;
 	private RangerPolicyEngineOptions defaultAdminOptions;
@@ -638,7 +636,7 @@ public class ServiceREST {
 		final String ret;
 
 		if (MapUtils.isNotEmpty(request.getParameterMap())) {
-			for (Entry<String, String[]> e : request.getParameterMap().entrySet()) {
+			for (Map.Entry<String, String[]> e : request.getParameterMap().entrySet()) {
 				String name = e.getKey();
 				String[] values = e.getValue();
 
@@ -766,7 +764,6 @@ public class ServiceREST {
 
 			if (StringUtils.isBlank(service.getTagService()) &&
 				!StringUtils.equals(EmbeddedServiceDefsUtil.EMBEDDED_SERVICEDEF_TAG_NAME, serviceType) &&
-				!StringUtils.equals(EMBEDDED_SERVICEDEF_GDS_NAME, serviceType) &&
 				!StringUtils.equals(EmbeddedServiceDefsUtil.EMBEDDED_SERVICEDEF_KMS_NAME , serviceType)) {
 				createOrGetLinkedServices(service);
 			}
@@ -1104,15 +1101,15 @@ public class ServiceREST {
 
 		List<RangerServiceHeaderInfo> ret = daoManager.getXXService().findServiceHeaders();
 
-		for (ListIterator<RangerServiceHeaderInfo> iter = ret.listIterator(); iter.hasNext(); ) {
-			RangerServiceHeaderInfo serviceHeader = iter.next();
+		if (!ret.isEmpty() && (filterByNamePrefix || filterByType)) {
+			for (ListIterator<RangerServiceHeaderInfo> iter = ret.listIterator(); iter.hasNext(); ) {
+				RangerServiceHeaderInfo serviceHeader = iter.next();
 
-			if (EMBEDDED_SERVICEDEF_GDS_NAME.equals(serviceHeader.getType())) {
-				iter.remove();
-			} else if (filterByNamePrefix && !StringUtils.startsWithIgnoreCase(serviceHeader.getName(), namePrefix)) {
-				iter.remove();
-			} else if (filterByType && !StringUtils.equals(serviceHeader.getType(), svcType)) {
-				iter.remove();
+				if (filterByNamePrefix && !StringUtils.startsWithIgnoreCase(serviceHeader.getName(), namePrefix)) {
+					iter.remove();
+				} else if (filterByType && !StringUtils.equals(serviceHeader.getType(), svcType)) {
+					iter.remove();
+				}
 			}
 		}
 
@@ -1283,7 +1280,6 @@ public class ServiceREST {
 	
 						if(policyUpdated) {
 							policy.setZoneName(zoneName);
-							ensureAdminAccess(policy);
 							svcStore.updatePolicy(policy);
 						} else {
 							LOG.error("processGrantRequest processing failed");
@@ -1321,7 +1317,6 @@ public class ServiceREST {
 						policy.addPolicyItem(policyItem);
 						policy.setZoneName(zoneName);
 
-						ensureAdminAccess(policy);
 						svcStore.createPolicy(policy);
 					}
 				} catch(WebApplicationException excp) {
@@ -1354,7 +1349,6 @@ public class ServiceREST {
 		}
 		RESTResponse     ret  = new RESTResponse();
 		RangerPerfTracer perf = null;
-
 		bizUtil.blockAuditorRoleUser();
 
 		if(grantRequest != null) {
@@ -1400,9 +1394,6 @@ public class ServiceREST {
 
 							if(policyUpdated) {
 								policy.setZoneName(zoneName);
-
-								ensureAdminAccess(policy);
-
 								svcStore.updatePolicy(policy);
 							} else {
 								LOG.error("processSecureGrantRequest processing failed");
@@ -1440,8 +1431,6 @@ public class ServiceREST {
 							policy.addPolicyItem(policyItem);
 							policy.setZoneName(zoneName);
 
-							ensureAdminAccess(policy);
-
 							svcStore.createPolicy(policy);
 						}
 					}else{
@@ -1478,7 +1467,6 @@ public class ServiceREST {
 
 		RESTResponse     ret  = new RESTResponse();
 		RangerPerfTracer perf = null;
-
 		if(revokeRequest!=null){
 			if (serviceUtil.isValidateHttpsAuthentication(serviceName,request)) {
 
@@ -1524,9 +1512,6 @@ public class ServiceREST {
 
 						if(policyUpdated) {
 							policy.setZoneName(zoneName);
-
-							ensureAdminAccess(policy);
-
 							svcStore.updatePolicy(policy);
 						} else {
 							LOG.error("processRevokeRequest processing failed");
@@ -1563,7 +1548,6 @@ public class ServiceREST {
 		}
 		RESTResponse     ret  = new RESTResponse();
 		RangerPerfTracer perf = null;
-
 		bizUtil.blockAuditorRoleUser();
 
 		if (revokeRequest != null) {
@@ -1610,9 +1594,6 @@ public class ServiceREST {
 
 							if(policyUpdated) {
 								policy.setZoneName(zoneName);
-
-								ensureAdminAccess(policy);
-
 								svcStore.updatePolicy(policy);
 							} else {
 								LOG.error("processSecureRevokeRequest processing failed");
@@ -1657,7 +1638,6 @@ public class ServiceREST {
 			if(RangerPerfTracer.isPerfTraceEnabled(PERF_LOG)) {
 				perf = RangerPerfTracer.getPerfTracer(PERF_LOG, "ServiceREST.createPolicy(policyName=" + policy.getName() + ")");
 			}
-
 			if(request != null) {
 				boolean deleteIfExists=("true".equalsIgnoreCase(StringUtils.trimToEmpty(request.getParameter(PARAM_DELETE_IF_EXISTS)))) ? true : false ;
 				if(deleteIfExists) {
@@ -1737,6 +1717,7 @@ public class ServiceREST {
 		RangerPolicy ret = null;
 
 		if (policy != null && StringUtils.isNotBlank(policy.getService())) {
+
 			try {
 
 				final              RangerPolicy existingPolicy;
@@ -1844,8 +1825,7 @@ public class ServiceREST {
 			validator.validate(policy, Action.UPDATE, bizUtil.isAdmin() || isServiceAdmin(policy.getService()) || isZoneAdmin(policy.getZoneName()));
 
 			ensureAdminAccess(policy);
-			bizUtil.blockAuditorRoleUser();
-
+                        bizUtil.blockAuditorRoleUser();
 			ret = svcStore.updatePolicy(policy);
 		} catch(WebApplicationException excp) {
 			throw excp;
@@ -2864,9 +2844,9 @@ public class ServiceREST {
 							List<RangerPolicy> policiesToBeDeleted = new ArrayList<RangerPolicy>();
 							for (RangerPolicy rangerPolicy : rangerPolicyList) {
 								if (rangerPolicy != null) {
-									Map<String, RangerPolicyResource> rangerPolicyResourceMap=rangerPolicy.getResources();
+									Map<String, RangerPolicy.RangerPolicyResource> rangerPolicyResourceMap=rangerPolicy.getResources();
 									if (rangerPolicyResourceMap!=null) {
-										RangerPolicyResource rangerPolicyResource=null;
+										RangerPolicy.RangerPolicyResource rangerPolicyResource=null;
 										if (rangerPolicyResourceMap.containsKey("path")) {
 					                        rangerPolicyResource=rangerPolicyResourceMap.get("path");
 					                    } else if (rangerPolicyResourceMap.containsKey("database")) {
@@ -3584,7 +3564,7 @@ public class ServiceREST {
 				policyList.add(policy);
 			}
 
-			for (Entry<String, List<RangerPolicy>> entry : servicePoliciesMap.entrySet()) {
+			for (Map.Entry<String, List<RangerPolicy>> entry : servicePoliciesMap.entrySet()) {
 				String             serviceName  = entry.getKey();
 				List<RangerPolicy> listToFilter = entry.getValue();
 
@@ -3645,8 +3625,6 @@ public class ServiceREST {
 	}
 
 	void ensureAdminAccess(RangerPolicy policy) {
-		blockIfGdsService(policy.getService());
-
 		boolean isAdmin = bizUtil.isAdmin();
 		boolean isKeyAdmin = bizUtil.isKeyAdmin();
 		String userName = bizUtil.getCurrentUserLoginId();
@@ -3688,14 +3666,6 @@ public class ServiceREST {
 							MessageEnums.OPER_NO_PERMISSION);
 				}
 			}
-		}
-	}
-
-	public void blockIfGdsService(String serviceName) {
-		String serviceType = daoManager.getXXServiceDef().findServiceDefTypeByServiceName(serviceName);
-
-		if (EMBEDDED_SERVICEDEF_GDS_NAME.equals(serviceType)) {
-			throw restErrorUtil.createRESTException(HttpServletResponse.SC_FORBIDDEN, EMBEDDED_SERVICEDEF_GDS_NAME.toUpperCase() + " policies can't be managed via this API", true);
 		}
 	}
 
@@ -4408,6 +4378,15 @@ public class ServiceREST {
 		}
 	}
 
+	private String getGeneratedTagServiceName(String resourceServiceName) {
+		int lastIndexOfMarker = StringUtils.lastIndexOf(resourceServiceName, '_');
+		if (lastIndexOfMarker != -1) {
+			return resourceServiceName.substring(0, lastIndexOfMarker) + "_tag";
+		} else {
+			return null;
+		}
+	}
+
 	private void deleteExactMatchPolicyForResource(List<RangerPolicy> policies, String user, String zoneName) throws Exception {
 		if (CollectionUtils.isNotEmpty(policies)) {
 			long totalDeletedPolicies = 0;
@@ -4600,9 +4579,7 @@ public class ServiceREST {
 						bizUtil.hasKMSPermissions("Service", xxServiceDef.getImplclassname());
 						bizUtil.blockAuditorRoleUser();
 					}
-
 					tagStore.deleteAllTagObjectsForService(service.getName());
-
 					deletedServiceName = service.getName();
 
 					svcStore.deleteService(id);

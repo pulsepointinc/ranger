@@ -33,7 +33,6 @@ import auditsIcon from "Images/sidebar/audits.svg";
 import zoneIcon from "Images/sidebar/zone.svg";
 import settingsIcon from "Images/sidebar/settings.svg";
 import accountIcon from "Images/sidebar/account.svg";
-import gdsIcon from "Images/sidebar/governed-data.svg";
 import Collapse from "react-bootstrap/Collapse";
 import { fetchApi } from "Utils/fetchAPI";
 import { getUserProfile, setUserProfile } from "Utils/appState";
@@ -303,29 +302,6 @@ export const SideBar = () => {
               >
                 <img src={tagsIcon} />
                 <span>Tag Policies</span>
-              </Button>
-            </li>
-          )}
-
-          {hasAccessToTab("Governed Data Sharing") && (
-            <li
-              className={
-                isActive !== null && isActive === "gdsCollapse"
-                  ? "selected"
-                  : undefined
-              }
-            >
-              <Button
-                id="gdsButton"
-                className={activeClass("GDS")}
-                onClick={() => {
-                  setActive("gdsCollapse");
-                  setAccountDrawer(false);
-                  setDrawer(true);
-                }}
-              >
-                <img src={gdsIcon} />
-                <span>Governed Data Sharing</span>
               </Button>
             </li>
           )}

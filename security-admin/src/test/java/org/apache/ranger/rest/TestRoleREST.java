@@ -592,7 +592,6 @@ public class TestRoleREST {
     @Test
     public void test10bAddUsersAndGroups(){
         RangerRole rangerRole = createRoleWithUsersAndGroups();
-        int currentUsersCount = rangerRole.getUsers().size();
         int currentGroupsCount = rangerRole.getGroups().size();
         List<String> users = new ArrayList<>(Arrays.asList("test-role2","test-role3"));
         List<String> groups = new ArrayList<>(Arrays.asList("test-group2","test-group3"));
@@ -616,7 +615,7 @@ public class TestRoleREST {
 
     @Test(expected = Throwable.class)
     public void test10cAddUsersAndGroups(){
-        RangerRole rangerRole = createRole();
+        createRole();
         List<String> users = new ArrayList<>(Arrays.asList("{OWNER}","test-role3"));
         List<String> groups = new ArrayList<>(Arrays.asList("test-group2","test-group3"));
         Boolean isAdmin = Boolean.TRUE;
@@ -652,7 +651,7 @@ public class TestRoleREST {
 
     @Test(expected = Throwable.class)
     public void test13bGrantRole(){
-        RangerRole rangerRole = createRole();
+        createRole();
         String serviceName = "serviceName";
         GrantRevokeRoleRequest grantRevokeRoleRequest = createGrantRevokeRoleRequest();
         roleRest.grantRole(serviceName, grantRevokeRoleRequest,
@@ -685,7 +684,7 @@ public class TestRoleREST {
 
     @Test(expected = Throwable.class)
     public void test14cRevokeRole(){
-        RangerRole rangerRole = createRole();
+        createRole();
         String serviceName = "serviceName";
         GrantRevokeRoleRequest grantRevokeRoleRequest = createGrantRevokeRoleRequest();
         grantRevokeRoleRequest.setGrantOption(Boolean.TRUE);
@@ -701,7 +700,6 @@ public class TestRoleREST {
         rangerRoles.add(rangerRole);
         List<XXRoleRefGroup> xxRoleRefGroupList = createXXRoleRefGroupList();
         List<XXRoleRefUser> xxRoleRefRoleList = createXXRoleRefUserList();
-        Set<String> groups = new HashSet<>(Arrays.asList("group1", "group2"));
         Mockito.when(xUserService.getXUserByUserName(Mockito.anyString())).thenReturn(null);
         Mockito.when(roleRefUpdater.getRangerDaoManager().getXXRoleRefUser().findByUserName(adminLoginID)).
                 thenReturn(xxRoleRefRoleList);
@@ -712,7 +710,7 @@ public class TestRoleREST {
 
     @Test(expected = Throwable.class)
     public void test16bGetRangerRolesIfUpdated() {
-        RangerRoles rangerRoles = createRangerRoles();
+        createRangerRoles();
         String serviceName = "serviceName";
         String pluginId = "pluginId";
         String clusterName = "";

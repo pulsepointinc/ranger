@@ -64,13 +64,13 @@ import org.apache.ranger.view.VXPortalUserList;
 import org.apache.ranger.view.VXResponse;
 import org.apache.ranger.view.VXString;
 import org.apache.ranger.view.VXUserPermission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.ranger.service.RangerBaseModelService.OPERATION_UPDATE_CONTEXT;
 
@@ -457,12 +457,9 @@ public class UserMgr {
 		} else {
 			String encryptedOldPwd = encrypt(gjUser.getLoginId(), changeEmail.getOldPassword());
 			if (!stringUtil.equals(encryptedOldPwd, gjUser.getPassword())) {
-				encryptedOldPwd = encryptWithOlderAlgo(gjUser.getLoginId(), changeEmail.getOldPassword());
-				if (!stringUtil.equals(encryptedOldPwd, gjUser.getPassword())) {
-					logger.info("changeEmailAddress(). Invalid  password. changeEmail=" + changeEmail);
-					throw restErrorUtil.createRESTException("serverMsg.userMgrWrongPassword",
-							MessageEnums.OPER_NO_PERMISSION, null, null, "" + changeEmail);
-				}
+				logger.info("changeEmailAddress(). Invalid  password. changeEmail=" + changeEmail);
+				throw restErrorUtil.createRESTException("serverMsg.userMgrWrongPassword",
+						MessageEnums.OPER_NO_PERMISSION, null, null, "" + changeEmail);
 			}
 		}
 
@@ -1221,7 +1218,7 @@ public class UserMgr {
             if (logger.isDebugEnabled()) {
                 logger.debug("Permission"
                         + " denied. LoggedInUser="
-                        + (session != null && session.getXXPortalUser() != null ? session.getXXPortalUser().getId()
+                        + (session != null ? session.getXXPortalUser().getId()
                                 : "")
                         + " isn't permitted to perform the action.");
             }

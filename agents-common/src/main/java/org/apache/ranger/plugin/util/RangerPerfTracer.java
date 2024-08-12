@@ -19,9 +19,9 @@
 
 package org.apache.ranger.plugin.util;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.StringUtils;
 
 import java.lang.management.ThreadInfo;
 
@@ -48,28 +48,21 @@ public class RangerPerfTracer {
 	}
 
 	public static RangerPerfTracer getPerfTracer(Logger logger, String tag) {
-		if (logger.isDebugEnabled()) {
-			String data    = "";
-			String realTag = "";
+		String data = "";
+		String realTag = "";
 
-			if (tag != null) {
-				int indexOfTagEndMarker = StringUtils.indexOf(tag, tagEndMarker);
-
-				if (indexOfTagEndMarker != -1) {
-					realTag = StringUtils.substring(tag, 0, indexOfTagEndMarker);
-
-					if (!PerfDataRecorder.collectStatistics()) {
-						data = StringUtils.substring(tag, indexOfTagEndMarker);
-					}
-				} else {
-					realTag = tag;
+		if (tag != null) {
+			int indexOfTagEndMarker = StringUtils.indexOf(tag, tagEndMarker);
+			if (indexOfTagEndMarker != -1) {
+				realTag = StringUtils.substring(tag, 0, indexOfTagEndMarker);
+				if (!PerfDataRecorder.collectStatistics()) {
+					data = StringUtils.substring(tag, indexOfTagEndMarker);
 				}
+			} else {
+				realTag = tag;
 			}
-
-			return RangerPerfTracerFactory.getPerfTracer(logger, realTag, data);
-		} else {
-			return null;
 		}
+		return RangerPerfTracerFactory.getPerfTracer(logger, realTag, data);
 	}
 
 	public static RangerPerfTracer getPerfTracer(Logger logger, String tag, String data) {

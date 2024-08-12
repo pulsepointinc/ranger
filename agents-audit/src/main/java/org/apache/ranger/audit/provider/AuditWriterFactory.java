@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class AuditWriterFactory {
-    private static final Logger logger                     = LoggerFactory.getLogger(AuditWriterFactory.class);
+    private static final Logger    logger                     = LoggerFactory.getLogger(AuditWriterFactory.class);
     public static  final String AUDIT_FILETYPE_DEFAULT     = "json";
     public static  final String AUDIT_JSON_FILEWRITER_IMPL = "org.apache.ranger.audit.utils.RangerJSONAuditWriter";
     public static  final String AUDIT_ORC_FILEWRITER_IMPL  = "org.apache.ranger.audit.utils.RangerORCAuditWriter";

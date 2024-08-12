@@ -46,6 +46,7 @@ import java.util.ServiceLoader;
 
 @InterfaceAudience.Private
 public class KMSWebApp implements ServletContextListener {
+
   private static final String METRICS_PREFIX = "hadoop.kms.";
   private static final String ADMIN_CALLS_METER = METRICS_PREFIX +
       "admin.calls.meter";
@@ -92,7 +93,13 @@ public class KMSWebApp implements ServletContextListener {
   }
 
   private void initLogging() {
-    LOG = LoggerFactory.getLogger(KMSWebApp.class);
+    if (System.getProperty("log4j.configuration") == null) {
+      System.setProperty("log4j.defaultInitOverride", "true");
+      LOG = LoggerFactory.getLogger(KMSWebApp.class);
+      LOG.debug("KMS log starting");
+    } else {
+      LOG = LoggerFactory.getLogger(KMSWebApp.class);
+    }
   }
 
   /**

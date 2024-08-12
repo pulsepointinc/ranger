@@ -22,7 +22,6 @@
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -32,10 +31,10 @@ import javax.ws.rs.core.Response;
 import org.apache.ranger.admin.client.datatype.RESTResponse;
 import org.apache.ranger.view.VXMessage;
 import org.apache.ranger.view.VXResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Component
@@ -134,25 +133,7 @@ public class RESTErrorUtil {
 		return restException;
 	}
 
-	public WebApplicationException create403RESTException(VXResponse gjResponse) {
-		gjResponse.setStatusCode(VXResponse.STATUS_ERROR);
-		gjResponse.setMessageList(Collections.singletonList(MessageEnums.OPER_NO_PERMISSION.getMessage()));
-
-		Response                errorResponse = Response.status(javax.servlet.http.HttpServletResponse.SC_FORBIDDEN).entity(gjResponse).build();
-		WebApplicationException restException = new WebApplicationException(errorResponse);
-
-		restException.fillInStackTrace();
-
-		if (logger.isInfoEnabled()) {
-			UserSessionBase userSession = ContextUtil.getCurrentUserSession();
-			String          loginId     = (userSession != null) ? userSession.getLoginId() : null;
-
-			logger.info("Request failed. loginId=" + loginId + ", logMessage=" + gjResponse.getMsgDesc(), restException);
-		}
-
-		return restException;
-	}
-
+	
 	public WebApplicationException createGrantRevokeRESTException(String logMessage) {
 		RESTResponse resp = new RESTResponse();
 		resp.setMsgDesc(logMessage);

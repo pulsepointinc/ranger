@@ -44,8 +44,8 @@ import org.apache.ranger.audit.provider.AuditHandler;
 import org.apache.ranger.audit.provider.MiscUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.slf4j.MDC;
+
 
 /**
  * This class temporarily stores logs in file system if the destination is

@@ -59,7 +59,7 @@ class RangerPolicy(RangerBaseModelObject):
         super(RangerPolicy, self).type_coerce_attrs()
 
         self.resources            = type_coerce_dict(self.resources, RangerPolicyResource)
-        self.additionalResources  = type_coerce_list_dict(self.additionalResources, RangerPolicyResource)
+        self.additionalResources  = type_coerce_list(self.additionalResources, dict)
         self.policyItems          = type_coerce_list(self.policyItems, RangerPolicyItem)
         self.denyPolicyItems      = type_coerce_list(self.denyPolicyItems, RangerPolicyItem)
         self.allowExceptions      = type_coerce_list(self.allowExceptions, RangerPolicyItem)
@@ -67,7 +67,16 @@ class RangerPolicy(RangerBaseModelObject):
         self.dataMaskPolicyItems  = type_coerce_list(self.dataMaskPolicyItems, RangerDataMaskPolicyItem)
         self.rowFilterPolicyItems = type_coerce_list(self.rowFilterPolicyItems, RangerRowFilterPolicyItem)
         self.validitySchedules    = type_coerce_list(self.validitySchedules, RangerValiditySchedule)
-        self.conditions           = type_coerce_list(self.conditions, RangerPolicyItemCondition)
+
+        if isinstance(self.additionalResources, list):
+            additionalResources = []
+
+            for entry in self.additionalResources:
+                additionalResources.append(type_coerce_dict(entry, RangerPolicyResource))
+
+            self.additionalResources = additionalResources
+        else:
+            self.additionalResources = None
 
     def add_resource(self, resource):
         if resource is not None:
@@ -119,8 +128,7 @@ class RangerPolicyItem(RangerBase):
     def type_coerce_attrs(self):
         super(RangerPolicyItem, self).type_coerce_attrs()
 
-        self.accesses   = type_coerce_list(self.accesses, RangerPolicyItemAccess)
-        self.conditions = type_coerce_list(self.conditions, RangerPolicyItemCondition)
+        self.accesses = type_coerce_list(self.accesses, RangerPolicyItemAccess)
 
 
 class RangerDataMaskPolicyItem(RangerPolicyItem):

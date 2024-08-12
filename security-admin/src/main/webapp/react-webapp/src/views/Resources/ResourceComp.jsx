@@ -41,8 +41,7 @@ export default function ResourceComp(props) {
     policyType,
     policyId,
     name,
-    isMultiResources,
-    isGds
+    isMultiResources
   } = props;
   const [rsrcState, setLoader] = useState({ loader: false, resourceKey: -1 });
   const toastId = useRef(null);
@@ -83,9 +82,9 @@ export default function ResourceComp(props) {
   };
 
   const RenderValidateField = ({ name }) =>
-    (formValues && formValues[name]?.mandatory && (
-      <span className={!isGds ? "" : "top-0"}>*</span>
-    )) || <span>&nbsp;</span>;
+    (formValues && formValues[name]?.mandatory && <span>*</span>) || (
+      <span>&nbsp;</span>
+    );
 
   const renderResourceSelect = (levelKey, index) => {
     let renderLabel = false;
@@ -219,7 +218,7 @@ export default function ResourceComp(props) {
 
         {formValues[`resourceName-${levelKey}`] && (
           <>
-            <Col sm={!isGds ? 5 : 9}>
+            <Col sm={5}>
               <ResourceSelectComp
                 levelKey={levelKey}
                 formValues={formValues}
@@ -231,8 +230,7 @@ export default function ResourceComp(props) {
             </Col>
           </>
         )}
-
-        {formValues[`resourceName-${levelKey}`] && !isGds && (
+        {formValues[`resourceName-${levelKey}`] && (
           <Col sm={4}>
             <Row>
               {formValues[`resourceName-${levelKey}`]["excludesSupported"] && (

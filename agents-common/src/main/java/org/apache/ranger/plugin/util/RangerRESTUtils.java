@@ -24,9 +24,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.commons.lang.StringUtils;
+import com.kstruct.gethostname4j.Hostname;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.kstruct.gethostname4j.Hostname;
 
 /**
  * Since this class does not retain any state.  It isn't a singleton for testability.
@@ -75,10 +75,6 @@ public class RangerRESTUtils {
 	public static final String REST_PARAM_LAST_KNOWN_USERSTORE_VERSION = "lastKnownUserStoreVersion";
 	public static final String REST_URL_SERVICE_GET_USERSTORE          = "/service/xusers/download/";
 	public static final String REST_URL_SERVICE_SERCURE_GET_USERSTORE  = "/service/xusers/secure/download/";
-
-	public static final String REST_PARAM_LAST_KNOWN_GDS_VERSION    = "lastKnownGdsVersion";
-	public static final String REST_URL_SERVICE_GET_GDSINFO         = "/service/gds/download/";
-	public static final String REST_URL_SERVICE_SECURE_GET_GDSINFO  = "/service/gds/secure/download/";
 
 	private static final int MAX_PLUGIN_ID_LEN = 255;
 	

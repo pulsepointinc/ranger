@@ -162,6 +162,13 @@ public class RangerMasterKey implements RangerKMSMKI {
         }
     }
 
+    /**
+     * Generate the master key, encrypt it and save it in the database
+     *
+     * @return true if the master key was successfully created false if master
+     * key generation was unsuccessful or the master key already exists
+     */
+
     public void init() {
         if (logger.isDebugEnabled()) {
             logger.debug("==> RangerMasterKey.init()");

@@ -114,19 +114,6 @@ public class XXServiceDao extends BaseDao<XXService> {
 		}
 	}
 
-	public List<Long> findIdsByTagServiceId(Long tagServiceId) {
-		List<Long> ret = null;
-
-		try {
-			ret =  getEntityManager().createNamedQuery("XXService.findIdsByTagServiceId", Long.class)
-					.setParameter("tagServiceId", tagServiceId).getResultList();
-		} catch (NoResultException e) {
-			// ignre
-		}
-
-		return ret != null ? ret : Collections.emptyList();
-	}
-
 	public XXService findAssociatedTagService(String serviceName) {
 		try {
 			return getEntityManager().createNamedQuery("XXService.findAssociatedTagService", tClass)

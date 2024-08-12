@@ -123,10 +123,10 @@ public class PatchForUpdatingPolicyJson_J10019 extends BaseLoader {
 	PolicyRefUpdater policyRefUpdater;
 
 	@Autowired
-	XUserMgr xUserMgr;
+	RangerDataHistService dataHistService;
 
 	@Autowired
-	RangerDataHistService dataHistService;
+	XUserMgr xUserMgr;
 
 	private final Map<String, Long>              groupIdMap         = new HashMap<>();
 	private final Map<String, Long>              userIdMap          = new HashMap<>();

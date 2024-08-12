@@ -73,10 +73,10 @@ import org.apache.ranger.view.VXResponse;
 import org.apache.ranger.view.VXString;
 import org.apache.ranger.view.VXStringList;
 import org.apache.ranger.view.VXUser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class RangerBizUtil {
@@ -1204,57 +1204,6 @@ public class RangerBizUtil {
 		return AppConstants.DB_FLAVOR_UNKNOWN;
 	}
 
-	public static String getDBFlavorType(int dbFlavor) {
-		final String dbFlavourType;
-
-		switch (dbFlavor) {
-			case AppConstants.DB_FLAVOR_MYSQL:
-				dbFlavourType = "MYSQL";
-				break;
-			case AppConstants.DB_FLAVOR_ORACLE:
-				dbFlavourType = "ORACLE";
-				break;
-			case AppConstants.DB_FLAVOR_POSTGRES:
-				dbFlavourType = "POSTGRES";
-				break;
-			case AppConstants.DB_FLAVOR_SQLANYWHERE:
-				dbFlavourType = "SQLANYWHERE";
-				break;
-			case AppConstants.DB_FLAVOR_SQLSERVER:
-				dbFlavourType = "SQLSERVER";
-				break;
-			default:
-				dbFlavourType = "Unknown";
-				break;
-		}
-
-		return dbFlavourType;
-	}
-
-	public static String getDBVersionQuery(int dbFlavor){
-		final String dbQuery;
-
-		switch (dbFlavor) {
-			case AppConstants.DB_FLAVOR_ORACLE:
-				dbQuery = "SELECT banner from v$version where rownum<2";
-				break;
-			case AppConstants.DB_FLAVOR_MYSQL:
-			case AppConstants.DB_FLAVOR_POSTGRES:
-				dbQuery = "SELECT version()";
-				break;
-			case AppConstants.DB_FLAVOR_SQLANYWHERE:
-			case AppConstants.DB_FLAVOR_SQLSERVER:
-				dbQuery = "SELECT @@version";
-				break;
-			default:
-				dbQuery = null;
-				break;
-		}
-
-		return dbQuery;
-	}
-
-
 	public String getDBVersion(){
 		return daoManager.getXXUser().getDBVersion();
     }
@@ -1606,13 +1555,5 @@ public class RangerBizUtil {
 			vXResponse.setMsgDesc("Bad Credentials");
 			throw restErrorUtil.generateRESTException(vXResponse);
 		}
-	}
-
-	public boolean isGdsServiceDef(XXDBBase xxdbBase) {
-		return (xxdbBase instanceof XXServiceDef) && EmbeddedServiceDefsUtil.EMBEDDED_SERVICEDEF_GDS_NAME.equals(((XXServiceDef) xxdbBase).getName());
-	}
-
-	public boolean isGdsService(XXDBBase xxdbBase) {
-		return (xxdbBase instanceof XXService) && EmbeddedServiceDefsUtil.instance().getGdsServiceDefId() == ((XXService) xxdbBase).getType();
 	}
 }

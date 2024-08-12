@@ -20,7 +20,7 @@
 package org.apache.ranger.audit.destination;
 
 import java.io.File;
-import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -130,15 +130,13 @@ public class HDFSAuditDestination extends AuditDestination {
 		if (logger.isDebugEnabled()) {
 			logger.debug("==> HDFSAuditDestination.flush() called. name={}", getName());
 		}
-		try {
-			MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<Void>) () -> {
+		MiscUtil.executePrivilegedAction(new PrivilegedAction<Void>() {
+			@Override
+			public Void run() {
 				auditWriter.flush();
 				return null;
-			});
-		} catch (Exception excp) {
-			logger.error("HDFSAuditDestination.flush() failed", excp);
-		}
-
+			}
+		});
 		if (logger.isDebugEnabled()) {
 			logger.debug("<== HDFSAuditDestination.flush() called. name={}", getName());
 		}

@@ -32,6 +32,7 @@ import org.apache.ranger.biz.AssetMgr;
 import org.apache.ranger.biz.RangerBizUtil;
 import org.apache.ranger.biz.ServiceDBStore;
 import org.apache.ranger.biz.XUserMgr;
+import org.apache.ranger.common.AppConstants;
 import org.apache.ranger.common.MessageEnums;
 import org.apache.ranger.common.RESTErrorUtil;
 import org.apache.ranger.common.RangerConstants;
@@ -310,11 +311,22 @@ public class MetricUtil extends BaseLoader  {
 					break;
 				case "database" :
 					try {
-						int    dbFlavor      = RangerBizUtil.getDBFlavor();
-						String dbFlavourType = RangerBizUtil.getDBFlavorType(dbFlavor);
-						String dbDetail      = dbFlavourType + " " + xaBizUtil.getDBVersion();
-						String jsonDBDetail  = JsonUtils.objectToJson(dbDetail);
+						int dbFlavor = RangerBizUtil.getDBFlavor();
+						String dbFlavourType = "Unknown";
+						if (dbFlavor == AppConstants.DB_FLAVOR_MYSQL) {
+							dbFlavourType = "MYSQL ";
+						} else if (dbFlavor == AppConstants.DB_FLAVOR_ORACLE) {
+							dbFlavourType = "ORACLE ";
+						} else if (dbFlavor == AppConstants.DB_FLAVOR_POSTGRES) {
+							dbFlavourType = "POSTGRES ";
+						} else if (dbFlavor == AppConstants.DB_FLAVOR_SQLANYWHERE) {
+							dbFlavourType = "SQLANYWHERE ";
+						} else if (dbFlavor == AppConstants.DB_FLAVOR_SQLSERVER) {
+							dbFlavourType = "SQLSERVER ";
+						}
 
+						String dbDetail = dbFlavourType + xaBizUtil.getDBVersion();
+						final String jsonDBDetail = JsonUtils.objectToJson(dbDetail);
 						logger.info("jsonDBDetail:" + jsonDBDetail);
 					} catch (Exception e) {
 						logger.error("Error calculating Metric for database : " + e.getMessage());

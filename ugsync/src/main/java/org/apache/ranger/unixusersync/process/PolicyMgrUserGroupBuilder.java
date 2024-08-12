@@ -199,6 +199,11 @@ public class PolicyMgrUserGroupBuilder extends AbstractUserGroupSource implement
 			ldapUrl = config.getLdapUrl();
 		}
 
+		/* TODO: LOG4J2
+		if (isMockRun) {
+			LOG.setLevel(Level.DEBUG);
+		}
+		*/
 		sessionId=null;
 		String keyStoreFile =  config.getSSLKeyStorePath();
 		String trustStoreFile = config.getSSLTrustStorePath();

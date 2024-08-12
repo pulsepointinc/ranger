@@ -51,9 +51,7 @@ export const AccessLogsTable = ({ data = {} }) => {
     eventCount,
     zoneName,
     requestData,
-    tags,
-    datasets,
-    projects
+    tags
   } = data;
 
   const copyText = (val) => {
@@ -214,26 +212,6 @@ export const AccessLogsTable = ({ data = {} }) => {
                   .map((val) => {
                     return val.type;
                   })
-                  .sort()
-                  .join(", ")
-              : "--"}
-          </td>
-        </tr>
-        <tr>
-          <td>Datasets</td>
-          <td>
-            {!isEmpty(datasets)
-              ? JSON.parse(datasets)
-                  .sort()
-                  .join(", ")
-              : "--"}
-          </td>
-        </tr>
-        <tr>
-          <td>Projects</td>
-          <td>
-            {!isEmpty(projects)
-              ? JSON.parse(projects)
                   .sort()
                   .join(", ")
               : "--"}

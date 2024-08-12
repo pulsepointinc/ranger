@@ -219,6 +219,7 @@ public class RangerHdfsAuthorizer extends INodeAttributeProvider {
 		return rangerAce;
 	}
 
+
 	// for testing
 	public Configuration getConfig() {
 		return rangerPlugin.getConfig();

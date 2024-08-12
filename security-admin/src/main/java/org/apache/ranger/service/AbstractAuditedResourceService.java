@@ -86,7 +86,8 @@ public abstract class AbstractAuditedResourceService<T extends XXDBBase, V exten
 	public void createTransactionLog(XXTrxLogV2 trxLog, String attrName, String oldValue, String newValue) {
 		try {
 			ObjectChangeInfo objChangeInfo = new ObjectChangeInfo();
-			if("Password".equalsIgnoreCase(attrName)) {
+
+			if ("Password".equalsIgnoreCase(attrName)) {
 				oldValue = hiddenPasswordString;
 				newValue = hiddenPasswordString;
 			}
@@ -137,13 +138,14 @@ public abstract class AbstractAuditedResourceService<T extends XXDBBase, V exten
 				processFieldToCreateTrxLog(trxLog, obj, oldObj, action, objChangeInfo);
 			}
 
-			if(objChangeInfo.getAttributes() != null && objChangeInfo.getAttributes().size() > 0) {
-				for(AttributeChangeInfo changeInfo : objChangeInfo.getAttributes()) {
-					if("Password".equalsIgnoreCase(changeInfo.getAttributeName())) {
+			if (objChangeInfo.getAttributes() != null) {
+				for (AttributeChangeInfo changeInfo : objChangeInfo.getAttributes()) {
+					if ("Password".equalsIgnoreCase(changeInfo.getAttributeName())) {
 						changeInfo.setNewValue(hiddenPasswordString);
 						changeInfo.setOldValue(hiddenPasswordString);
 					}
 				}
+
 				trxLogList.add(new XXTrxLogV2(classType, obj.getId(), getObjectName(obj), getParentObjectType(obj, oldObj), getParentObjectId(obj, oldObj), getParentObjectName(obj, oldObj), toActionString(action), JsonUtilsV2.objToJson(objChangeInfo)));
 			}
 		} catch (Exception e) {

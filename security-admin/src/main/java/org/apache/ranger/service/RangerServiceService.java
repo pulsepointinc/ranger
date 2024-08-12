@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.thirdparty.com.google.common.base.Joiner;
-import org.apache.ranger.biz.GdsDBStore;
 import org.apache.ranger.biz.ServiceDBStore;
 import org.apache.ranger.db.XXServiceVersionInfoDao;
 import org.apache.ranger.entity.XXService;
@@ -33,9 +32,6 @@ import org.apache.ranger.entity.XXServiceConfigMap;
 import org.apache.ranger.entity.XXServiceVersionInfo;
 import org.apache.ranger.plugin.model.RangerService;
 import org.apache.ranger.plugin.util.PasswordUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -43,11 +39,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Scope("singleton")
 public class RangerServiceService extends RangerServiceServiceBase<XXService, RangerService> {
-	private static final Logger LOG = LoggerFactory.getLogger(RangerServiceService.class.getName());
-
-	@Autowired
-	GdsDBStore gdsStore;
-
 	String actionCreate;
 	String actionUpdate;
 	String actionDelete;
@@ -164,12 +155,10 @@ public class RangerServiceService extends RangerServiceServiceBase<XXService, Ra
 		serviceVersionInfo.setPolicyVersion(1L);
 		serviceVersionInfo.setTagVersion(1L);
 		serviceVersionInfo.setRoleVersion(1L);
-		serviceVersionInfo.setGdsVersion(1L);
 		Date now = new Date();
 		serviceVersionInfo.setPolicyUpdateTime(now);
 		serviceVersionInfo.setTagUpdateTime(now);
 		serviceVersionInfo.setRoleUpdateTime(now);
-		serviceVersionInfo.setGdsUpdateTime(now);
 
 		XXServiceVersionInfoDao serviceVersionInfoDao = daoMgr.getXXServiceVersionInfo();
 
@@ -183,12 +172,6 @@ public class RangerServiceService extends RangerServiceServiceBase<XXService, Ra
 		XXService ret = super.preDelete(id);
 
 		if (ret != null) {
-			try {
-				gdsStore.deleteAllGdsObjectsForService(id);
-			} catch (Exception excp) {
-				LOG.error("Error deleting GDS objects for service(id={})", id, excp);
-			}
-
 			XXServiceVersionInfoDao serviceVersionInfoDao = daoMgr.getXXServiceVersionInfo();
 
 			XXServiceVersionInfo serviceVersionInfo = serviceVersionInfoDao.findByServiceId(id);

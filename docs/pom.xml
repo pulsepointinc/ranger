@@ -28,7 +28,7 @@
     <url>http://ranger.apache.org/</url>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.ranger</groupId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>2.5.0-SNAPSHOT</version>
     <artifactId>ranger</artifactId>
     <packaging>pom</packaging>
     <licenses>
@@ -347,25 +347,13 @@
                 <role>Committer</role>
             </roles>
             <organization>
-                Cloudera
+                Privacera
             </organization>
         </developer>
 	    <developer>
             <id>mehul</id>
             <name>Mehul Parikh</name>
             <email>mehul@apache.org</email>
-            <timezone>Asia/Kolkata</timezone>
-            <roles>
-                <role>Committer</role>
-            </roles>
-            <organization>
-                Freestone Infotech
-            </organization>
-	</developer>
-        <developer>
-            <id>mugdha</id>
-            <name>Mugdha Varadkar</name>
-            <email>mugdha@apache.org</email>
             <timezone>Asia/Kolkata</timezone>
             <roles>
                 <role>Committer</role>
@@ -753,6 +741,10 @@
         <contributor>
             <name>Mateen Mansoori</name>
             <organization></organization>
+        </contributor>
+        <contributor>
+            <name>Mugdha Varadkar</name>
+            <organization>Freestone Infotech</organization>
         </contributor>
         <contributor>
             <name>Naoki Takezoe</name>

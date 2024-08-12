@@ -19,8 +19,6 @@ package org.apache.ranger.patch;
 
 import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.ranger.db.RangerDaoManager;
 import org.apache.ranger.entity.XXModuleDef;
 import org.apache.ranger.entity.XXPortalUser;
@@ -29,6 +27,8 @@ import org.apache.ranger.biz.XUserMgr;
 import org.apache.ranger.common.RangerConstants;
 import org.apache.ranger.util.CLIUtil;
 import org.apache.ranger.view.VXPortalUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -94,7 +94,6 @@ import org.apache.ranger.service.RangerServiceService;
 import org.apache.ranger.service.XUserService;
 import org.apache.ranger.view.*;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -960,7 +959,7 @@ public class TestServiceREST {
 		Mockito.verify(validatorFactory).getPolicyValidator(svcStore);
 
 		Mockito.verify(daoManager).getXXService();
-		Mockito.verify(daoManager, Mockito.atLeastOnce()).getXXServiceDef();
+		Mockito.verify(daoManager).getXXServiceDef();
 	}
 
 	@Test
@@ -2294,9 +2293,7 @@ public class TestServiceREST {
 		Mockito.when(userMgr.getGroupByGroupName(Mockito.anyString())).thenReturn(Mockito.mock(VXGroup.class));
 		Mockito.when(daoManager.getXXRole().findByRoleName(Mockito.anyString())).thenReturn(Mockito.mock(XXRole.class));
 	}
-
 	@Test
-	@Ignore
 	public void test14bGrantAccess() throws Exception {
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		String serviceName = "HDFS_1";
@@ -2315,7 +2312,6 @@ public class TestServiceREST {
 		assert restResponse.getStatusCode() == RESTResponse.STATUS_SUCCESS;
 	}
 	@Test
-	@Ignore
 	public void test64SecureGrantAccess(){
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		String serviceName = "HDFS_1";
@@ -2345,7 +2341,6 @@ public class TestServiceREST {
 		assert restResponse != null;
 		assert restResponse.getStatusCode() == RESTResponse.STATUS_SUCCESS;
 	}
-
 	@Test
 	public void test15bRevokeAccess() throws Exception {
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);

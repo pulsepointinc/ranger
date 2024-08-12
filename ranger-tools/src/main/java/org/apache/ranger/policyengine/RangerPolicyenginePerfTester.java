@@ -19,12 +19,12 @@
 
 package org.apache.ranger.policyengine;
 
-import org.apache.ranger.authorization.hadoop.config.RangerConfiguration;
 import org.apache.ranger.plugin.policyengine.RangerPolicyEngineOptions;
 import org.apache.ranger.plugin.policyevaluator.RangerPolicyEvaluator;
 import org.apache.ranger.plugin.util.PerfDataRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.ranger.authorization.hadoop.config.RangerConfiguration;
 
 import java.io.BufferedReader;
 import java.io.IOException;

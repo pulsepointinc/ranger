@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 import java.io.UnsupportedEncodingException;
-import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -163,7 +163,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 
 		RangerRole ret = null;
 
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_CREATE_ROLE;
@@ -172,19 +172,21 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.SERVICE_NAME_PARAM, serviceNameUrlParam);
 
 		if (isSecureMode) {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("create role as user " + user);
-			}
-
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientRes = null;
 					try {
-						return restClient.post(relativeURL, queryParams, request);
+						clientRes = restClient.post(relativeURL, queryParams, request);
 					} catch (Exception e) {
 						LOG.error("Failed to get response, Error is : "+e.getMessage());
 					}
-
-					return null;
-				});
+					return clientRes;
+				}
+			};
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("create role as user " + user);
+			}
+			response = user.doAs(action);
 		} else {
 			response = restClient.post(relativeURL, queryParams, request);
 		}
@@ -216,7 +218,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			LOG.debug("==> RangerAdminRESTClient.dropRole(" + roleName + ")");
 		}
 
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 
@@ -227,18 +229,21 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_DROP_ROLE + roleName;
 
 		if (isSecureMode) {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("drop role as user " + user);
-			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientRes = null;
 					try {
-						return restClient.delete(relativeURL, queryParams);
+						clientRes = restClient.delete(relativeURL, queryParams);
 					} catch (Exception e) {
 						LOG.error("Failed to get response, Error is : "+e.getMessage());
 					}
-
-					return null;
-				});
+					return clientRes;
+				}
+			};
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("drop role as user " + user);
+			}
+			response = user.doAs(action);
 		} else {
 			response = restClient.delete(relativeURL, queryParams);
 		}
@@ -268,24 +273,27 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 
 		List<String> ret = null;
 		String emptyString = "";
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GET_USER_ROLES + execUser;
 
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientRes = null;
+					try {
+						clientRes = restClient.get(relativeURL, null);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+					return clientRes;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("get roles as user " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					return restClient.get(relativeURL, null);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			response = user.doAs(action);
 		} else {
 			response = restClient.get(relativeURL, null);
 		}
@@ -320,7 +328,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 
 		List<String> ret = null;
 		String emptyString = "";
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GET_ALL_ROLES;
@@ -330,18 +338,21 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_EXEC_USER, execUser);
 
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientRes = null;
+					try {
+						clientRes = restClient.get(relativeURL, queryParams);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+				return clientRes;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("get roles as user " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					return restClient.get(relativeURL, queryParams);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			response = user.doAs(action);
 		} else {
 			response = restClient.get(relativeURL, queryParams);
 		}
@@ -375,7 +386,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		}
 
 		RangerRole ret = null;
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GET_ROLE_INFO + roleName;
@@ -385,18 +396,21 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_EXEC_USER, execUser);
 
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientResp = null;
+					try {
+						clientResp = restClient.get(relativeURL, queryParams);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+				return clientResp;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("get role info as user " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					return restClient.get(relativeURL, queryParams);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			response = user.doAs(action);
 		} else {
 			response = restClient.get(relativeURL, queryParams);
 		}
@@ -430,24 +444,27 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			LOG.debug("==> RangerAdminRESTClient.grantRole(" + request + ")");
 		}
 
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GRANT_ROLE + serviceNameUrlParam;
 
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientResp = null;
+					try {
+						clientResp = restClient.put(relativeURL, null, request);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+				return clientResp;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("grant role as user " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					return restClient.put(relativeURL, null, request);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			response = user.doAs(action);
 		} else {
 			response = restClient.put(relativeURL, null, request);
 		}
@@ -475,24 +492,27 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			LOG.debug("==> RangerAdminRESTClient.revokeRole(" + request + ")");
 		}
 
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 		String relativeURL = RangerRESTUtils.REST_URL_SERVICE_REVOKE_ROLE + serviceNameUrlParam;
 
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientResp = null;
+					try {
+						clientResp = restClient.put(relativeURL, null, request);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+				return clientResp;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("revoke role as user " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					return restClient.put(relativeURL, null, request);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			response = user.doAs(action);
 		} else {
 			response = restClient.put(relativeURL, null, request);
 		}
@@ -520,7 +540,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			LOG.debug("==> RangerAdminRESTClient.grantAccess(" + request + ")");
 		}
 
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 
@@ -528,20 +548,22 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_PLUGIN_ID, pluginId);
 
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					String relativeURL = RangerRESTUtils.REST_URL_SECURE_SERVICE_GRANT_ACCESS + serviceNameUrlParam;
+					ClientResponse clientResp = null;
+					try {
+						clientResp = restClient.post(relativeURL, queryParams, request);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+				return clientResp;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("grantAccess as user " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					String relativeURL = RangerRESTUtils.REST_URL_SECURE_SERVICE_GRANT_ACCESS + serviceNameUrlParam;
-
-					return restClient.post(relativeURL, queryParams, request);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			response = user.doAs(action);
 		} else {
 			String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GRANT_ACCESS + serviceNameUrlParam;
 			response = restClient.post(relativeURL, queryParams, request);
@@ -570,7 +592,7 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			LOG.debug("==> RangerAdminRESTClient.revokeAccess(" + request + ")");
 		}
 
-		final ClientResponse response;
+		ClientResponse response = null;
 		UserGroupInformation user = MiscUtil.getUGILoginUser();
 		boolean isSecureMode = isKerberosEnabled(user);
 
@@ -578,20 +600,22 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_PLUGIN_ID, pluginId);
 
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					String relativeURL = RangerRESTUtils.REST_URL_SECURE_SERVICE_REVOKE_ACCESS + serviceNameUrlParam;
+					ClientResponse clientResp = null;
+					try {
+						clientResp = restClient.post(relativeURL, queryParams, request);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+				return clientResp;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("revokeAccess as user " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					String relativeURL = RangerRESTUtils.REST_URL_SECURE_SERVICE_REVOKE_ACCESS + serviceNameUrlParam;
-
-					return restClient.post(relativeURL, queryParams, request);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			response = user.doAs(action);
 		} else {
 			String relativeURL = RangerRESTUtils.REST_URL_SERVICE_REVOKE_ACCESS + serviceNameUrlParam;
 			response = restClient.post(relativeURL, queryParams, request);
@@ -668,20 +692,23 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.PATTERN_PARAM, pattern);
 		String relativeURL = RangerRESTUtils.REST_URL_LOOKUP_TAG_NAMES;
 
-		final ClientResponse response;
+		ClientResponse response = null;
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientResp = null;
+					try {
+						clientResp = restClient.get(relativeURL, queryParams);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+				return clientResp;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("getTagTypes as user " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					return restClient.get(relativeURL, queryParams);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			response = user.doAs(action);
 		} else {
 			response = restClient.get(relativeURL, queryParams);
 		}
@@ -723,17 +750,19 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking UserStore updated as user : " + user);
 			}
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientRes = null;
 					String relativeURL = RangerRESTUtils.REST_URL_SERVICE_SERCURE_GET_USERSTORE + serviceNameUrlParam;
-
-					return restClient.get(relativeURL, queryParams);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
+					try {
+						clientRes =  restClient.get(relativeURL, queryParams);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+					return clientRes;
 				}
-
-				return null;
-			});
+			};
+			response = user.doAs(action);
 		} else {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking UserStore updated as user : " + user);
@@ -777,80 +806,6 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("<== RangerAdminRESTClient.getUserStoreIfUpdated(" + lastKnownUserStoreVersion + ", " + lastActivationTimeInMillis + "): ");
 		}
-
-		return ret;
-	}
-
-	@Override
-	public ServiceGdsInfo getGdsInfoIfUpdated(long lastKnownVersion, long lastActivationTimeInMillis) throws Exception {
-		LOG.debug("==> RangerAdminRESTClient.getGdsInfoIfUpdated({}, {})", lastKnownVersion, lastActivationTimeInMillis);
-
-		final ServiceGdsInfo       ret;
-		final UserGroupInformation user         = MiscUtil.getUGILoginUser();
-		final boolean              isSecureMode = isKerberosEnabled(user);
-		final Map<String, String>  queryParams  = new HashMap<>();
-		final ClientResponse       response;
-
-		queryParams.put(RangerRESTUtils.REST_PARAM_LAST_KNOWN_GDS_VERSION, Long.toString(lastKnownVersion));
-		queryParams.put(RangerRESTUtils.REST_PARAM_LAST_ACTIVATION_TIME, Long.toString(lastActivationTimeInMillis));
-		queryParams.put(RangerRESTUtils.REST_PARAM_PLUGIN_ID, pluginId);
-		queryParams.put(RangerRESTUtils.REST_PARAM_CLUSTER_NAME, clusterName);
-		queryParams.put(RangerRESTUtils.REST_PARAM_CAPABILITIES, pluginCapabilities);
-
-		LOG.debug("Checking for updated GdsInfo: secureMode={}, user={}, serviceName={}" , isSecureMode, user, serviceName);
-
-		if (isSecureMode) {
-			response = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					String relativeURL = RangerRESTUtils.REST_URL_SERVICE_SECURE_GET_GDSINFO + serviceNameUrlParam;
-
-					return restClient.get(relativeURL, queryParams);
-				} catch (Exception e) {
-					LOG.error("Failed to get response", e);
-				}
-
-				return null;
-			});
-		} else {
-			String relativeURL = RangerRESTUtils.REST_URL_SERVICE_GET_GDSINFO + serviceNameUrlParam;
-
-			response = restClient.get(relativeURL, queryParams);
-		}
-
-		if (response == null) {
-			ret = null;
-
-			LOG.error("Error getting GdsInfo - received NULL response: secureMode={}, user={}, serviceName={}", isSecureMode, user, serviceName);
-		} else if (response.getStatus() == HttpServletResponse.SC_NOT_MODIFIED) {
-			ret = null;
-
-			RESTResponse resp = RESTResponse.fromClientResponse(response);
-
-			LOG.debug("No change in GdsInfo: secureMode={}, user={}, response={}, serviceName={}, lastKnownGdsVersion={}, lastActivationTimeInMillis={}",
-					  isSecureMode, user, resp, serviceName, lastKnownVersion, lastActivationTimeInMillis);
-		} else if (response.getStatus() == HttpServletResponse.SC_OK) {
-			ret = JsonUtilsV2.readResponse(response, ServiceGdsInfo.class);
-		} else if (response.getStatus() == HttpServletResponse.SC_NOT_FOUND) {
-			ret = null;
-
-			LOG.error("Error getting GdsInfo - service not found: secureMode={}, user={}, response={}, serviceName={}, lastKnownGdsVersion={},lastActivationTimeInMillis={}",
-					  isSecureMode, user, response.getStatus(), serviceName, lastKnownVersion, lastActivationTimeInMillis);
-
-			String exceptionMsg = response.hasEntity() ? response.getEntity(String.class) : null;
-
-			RangerServiceNotFoundException.throwExceptionIfServiceNotFound(serviceName, exceptionMsg);
-
-			LOG.warn("Received 404 error code with body:[{}], Ignoring", exceptionMsg);
-		} else {
-			ret = null;
-
-			RESTResponse resp = RESTResponse.fromClientResponse(response);
-
-			LOG.warn("Error getting GdsInfo: unexpected status code {}: secureMode={}, user={}, response={}, serviceName={}",
-					 response.getStatus(), isSecureMode, user, resp, serviceName);
-		}
-
-		LOG.debug("<== RangerAdminRESTClient.getGdsInfoIfUpdated({}, {}): ret={}", lastKnownVersion, lastActivationTimeInMillis, ret);
 
 		return ret;
 	}
@@ -978,17 +933,19 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Service policy if updated as user : " + user);
 			}
-			ret = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
 					String relativeURL = RangerRESTUtils.REST_URL_POLICY_GET_FOR_SECURE_SERVICE_IF_UPDATED + serviceNameUrlParam;
-
-					return restClient.get(relativeURL, queryParams, policyDownloadSessionId);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
+					ClientResponse clientResp = null;
+					try {
+						clientResp = restClient.get(relativeURL, queryParams, policyDownloadSessionId);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+					return clientResp;
 				}
-
-				return null;
-			});
+			};
+			ret = user.doAs(action);
 		} else {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Service policy if updated with old api call");
@@ -1158,20 +1115,22 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 		queryParams.put(RangerRESTUtils.REST_PARAM_CAPABILITIES, pluginCapabilities);
 
 		if (isSecureMode) {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					String relativeURL = RangerRESTUtils.REST_URL_GET_SECURE_SERVICE_TAGS_IF_UPDATED + serviceNameUrlParam;
+					ClientResponse clientResp = null;
+					try {
+						clientResp = restClient.get(relativeURL, queryParams, tagDownloadSessionId);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+					return clientResp;
+				}
+			};
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("getServiceTagsIfUpdated as user " + user);
 			}
-			ret = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
-					String relativeURL = RangerRESTUtils.REST_URL_GET_SECURE_SERVICE_TAGS_IF_UPDATED + serviceNameUrlParam;
-
-					return restClient.get(relativeURL, queryParams, tagDownloadSessionId);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
-				}
-
-				return null;
-			});
+			ret = user.doAs(action);
 		} else {
 			String relativeURL = RangerRESTUtils.REST_URL_GET_SERVICE_TAGS_IF_UPDATED + serviceNameUrlParam;
 			ret = restClient.get(relativeURL, queryParams);
@@ -1341,17 +1300,19 @@ public class RangerAdminRESTClient extends AbstractRangerAdminClient {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Roles updated as user : " + user);
 			}
-			ret = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<ClientResponse>) () -> {
-				try {
+			PrivilegedAction<ClientResponse> action = new PrivilegedAction<ClientResponse>() {
+				public ClientResponse run() {
+					ClientResponse clientRes = null;
 					String relativeURL = RangerRESTUtils.REST_URL_SERVICE_SERCURE_GET_USER_GROUP_ROLES + serviceNameUrlParam;
-
-					return restClient.get(relativeURL, queryParams, roleDownloadSessionId);
-				} catch (Exception e) {
-					LOG.error("Failed to get response, Error is : "+e.getMessage());
+					try {
+						clientRes =  restClient.get(relativeURL, queryParams, roleDownloadSessionId);
+					} catch (Exception e) {
+						LOG.error("Failed to get response, Error is : "+e.getMessage());
+					}
+					return clientRes;
 				}
-
-				return null;
-			});
+			};
+			ret = user.doAs(action);
 		} else {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Checking Roles updated as user : " + user);

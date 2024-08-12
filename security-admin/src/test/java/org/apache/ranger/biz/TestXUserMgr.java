@@ -219,9 +219,6 @@ public class TestXUserMgr {
 	ServiceDBStore svcStore;
 
 	@Mock
-	GdsDBStore gdsStore;
-
-	@Mock
 	XGroupGroupService xGroupGroupService;
 
 	@Mock
@@ -583,7 +580,6 @@ public class TestXUserMgr {
 		policy.setPolicyItems(policyItems);
 		policy.setResources(policyResource);
 		policy.setPolicyLabels(policyLabels);
-		policy.setServiceType("hdfs");
 		return policy;
 	}
 
@@ -2174,8 +2170,8 @@ public class TestXUserMgr {
 		Assert.assertNotNull(serviceConfigUser);
 		Assert.assertEquals(xXUser.getName(), serviceConfigUser.getName());
 		Mockito.when(daoManager.getXXUser()).thenReturn(xxUserDao);
+		Mockito.when(xxUserDao.findByUserName(vxUser.getName())).thenReturn(null);
 		Mockito.when(xxUserDao.findByUserName(vxUser.getName())).thenReturn(null, xXUser);
-		Mockito.when(daoManager.getXXUser()).thenReturn(xxUserDao);
 		UserSessionBase userSession = Mockito.mock(UserSessionBase.class);
 		Set<UserSessionBase> userSessions = new HashSet<UserSessionBase>();
 		userSessions.add(userSession);
@@ -3350,7 +3346,6 @@ public class TestXUserMgr {
 		Assert.assertEquals(xXUser.getName(), serviceConfigUser.getName());
 		Mockito.when(daoManager.getXXUser()).thenReturn(xxUserDao);
 		Mockito.when(xxUserDao.findByUserName(vxUser.getName())).thenReturn(null);
-		Mockito.when(daoManager.getXXUser()).thenReturn(xxUserDao);
 		UserSessionBase userSession = Mockito.mock(UserSessionBase.class);
 		Set<UserSessionBase> userSessions = new HashSet<UserSessionBase>();
 		userSessions.add(userSession);
@@ -4671,6 +4666,7 @@ public class TestXUserMgr {
 		VXUser createdXUser = vxUser();
 		XXUser xXUser = xxUser(vXUser);
 		Mockito.when(daoManager.getXXUser()).thenReturn(xxUserDao);
+		
 		Mockito.when(xxUserDao.findByUserName(vXUser.getName())).thenReturn(null, xXUser);
 		Mockito.when(xUserService.populateViewBean(xXUser)).thenReturn(vXUser);
 

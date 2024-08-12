@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 public class HBaseClient extends BaseClient {
 
-	private static final Logger LOG 			 = LoggerFactory.getLogger(HBaseClient.class);
+	private static final Logger LOG 		 = LoggerFactory.getLogger(HBaseClient.class);
 
 	private static Subject subj 			 = null;
 

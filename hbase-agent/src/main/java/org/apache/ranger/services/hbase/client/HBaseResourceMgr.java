@@ -30,6 +30,7 @@ import org.apache.ranger.plugin.util.TimedEventUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class HBaseResourceMgr {
 
 	private static final Logger LOG = LoggerFactory.getLogger(HBaseResourceMgr.class);

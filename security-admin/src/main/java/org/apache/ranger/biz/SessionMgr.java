@@ -57,8 +57,6 @@ import org.apache.ranger.util.RestUtil;
 import org.apache.ranger.view.VXAuthSession;
 import org.apache.ranger.view.VXAuthSessionList;
 import org.apache.ranger.view.VXLong;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -66,6 +64,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Transactional

@@ -481,32 +481,16 @@ public class AuthzAuditEvent extends AuditEventBase {
 		return eventDurationMS;
 	}
 
-	public void setEventDurationMS(long frequencyDurationMS) {
-		this.eventDurationMS = frequencyDurationMS;
-	}
-
 	public Set<String> getTags() {
 		return tags;
 	}
 
+	public void setEventDurationMS(long frequencyDurationMS) {
+		this.eventDurationMS = frequencyDurationMS;
+	}
+
 	public void setTags(Set<String> tags) {
 		this.tags = tags;
-	}
-
-	public Set<String> getDatasets() {
-		return datasets;
-	}
-
-	public void setDatasets(Set<String> datasets) {
-		this.datasets = datasets;
-	}
-
-	public Set<String> getProjects() {
-		return projects;
-	}
-
-	public void setProjects(Set<String> projects) {
-		this.projects = projects;
 	}
 
 	public String getClusterName() {
@@ -587,9 +571,10 @@ public class AuthzAuditEvent extends AuditEventBase {
 				.append(FIELD_SEPARATOR).append("event_count=")
 				.append(eventCount).append(FIELD_SEPARATOR)
 				.append("event_dur_ms=").append(eventDurationMS)
-				.append(FIELD_SEPARATOR).append("tags=").append("[").append(StringUtils.join(tags, ", ")).append("]")
-				.append(FIELD_SEPARATOR).append("datasets=").append("[").append(datasets != null ? StringUtils.join(datasets, ", ") : "").append("]")
-				.append(FIELD_SEPARATOR).append("projects=").append("[").append(projects != null ? StringUtils.join(projects, ", ") : "").append("]")
+				.append(FIELD_SEPARATOR)
+				.append("tags=").append("[")
+				.append(StringUtils.join(tags, ", "))
+				.append("]")
 				.append(FIELD_SEPARATOR).append("clusterName=").append(clusterName)
 				.append(FIELD_SEPARATOR).append("zoneName=").append(zoneName)
 				.append(FIELD_SEPARATOR).append("policyVersion=").append(policyVersion)

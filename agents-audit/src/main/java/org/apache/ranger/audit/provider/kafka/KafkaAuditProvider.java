@@ -16,7 +16,7 @@
  */
 package org.apache.ranger.audit.provider.kafka;
 
-import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,7 +74,13 @@ public class KafkaAuditProvider extends AuditDestination {
 				LOG.info("Connecting to Kafka producer using properties:"
 						+ kakfaProps.toString());
 
-				producer = MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<Producer<String, String>>) () -> new KafkaProducer<>(kakfaProps));
+				producer  = MiscUtil.executePrivilegedAction(new PrivilegedAction<Producer<String, String>>() {
+					@Override
+					public Producer<String, String> run(){
+						Producer<String, String> producer = new KafkaProducer<String, String>(kakfaProps);
+						return producer;
+					};
+				});
 
 				initDone = true;
 			}
@@ -109,9 +115,12 @@ public class KafkaAuditProvider extends AuditDestination {
 				final ProducerRecord<String, String> keyedMessage = new ProducerRecord<String, String>(
 						topic, message);
 
-				MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<Void>) () -> {
-					producer.send(keyedMessage);
-					return null;
+				MiscUtil.executePrivilegedAction(new PrivilegedAction<Void>() {
+					@Override
+					public Void run(){
+						producer.send(keyedMessage);
+						return null;
+					};
 				});
 
 			} else {
@@ -160,9 +169,12 @@ public class KafkaAuditProvider extends AuditDestination {
 		LOG.info("stop() called");
 		if (producer != null) {
 			try {
-				MiscUtil.executePrivilegedAction((PrivilegedExceptionAction<Void>) () -> {
-					producer.close();
-					return null;
+				MiscUtil.executePrivilegedAction(new PrivilegedAction<Void>() {
+					@Override
+					public Void run() {
+						producer.close();
+						return null;
+					};
 				});
 			} catch (Throwable t) {
 				LOG.error("Error closing Kafka producer");

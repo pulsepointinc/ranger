@@ -77,7 +77,6 @@ public abstract class RangerServiceServiceBase<T extends XXServiceBase, V extend
 		xObj.setGuid(guid);
 		
 		XXServiceDef xServiceDef = daoMgr.getXXServiceDef().findByName(vObj.getType());
-
 		if(xServiceDef == null) {
 			throw restErrorUtil.createRESTException(
 					"No ServiceDefinition found with name :" + vObj.getType(),
@@ -150,9 +149,7 @@ public abstract class RangerServiceServiceBase<T extends XXServiceBase, V extend
 
 		for (T xSvc : xSvcList) {
 			if(bizUtil.hasAccess(xSvc, null)){
-				if (!bizUtil.isGdsService(xSvc)) {
-					permittedServices.add(xSvc);
-				}
+				permittedServices.add(xSvc);
 			}
 		}
 

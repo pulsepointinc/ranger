@@ -35,7 +35,7 @@ public class KMSMetricUtil {
 	
 	public static void main(String[] args) {
 		/* LOG4J2: TODO
-		Logger.getRootLogger().setLevel(Level.OFF);
+		logger.getRootLogger().setLevel(Level.OFF);
 		 */
 		logger.info("KMSMetricUtil : main()");
 		if(args.length != 2){
