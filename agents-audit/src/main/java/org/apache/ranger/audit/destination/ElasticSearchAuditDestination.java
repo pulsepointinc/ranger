@@ -48,15 +48,15 @@ import org.apache.ranger.audit.model.AuthzAuditEvent;
 import org.apache.ranger.audit.provider.MiscUtil;
 import org.apache.ranger.authorization.credutils.CredentialsProviderUtil;
 import org.apache.ranger.authorization.credutils.kerberos.KerberosCredentialsProvider;
-import org.elasticsearch.action.admin.indices.open.OpenIndexRequest;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RequestOptions;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.BulkRequest;
+import co.elastic.clients.elasticsearch.core.BulkResponse;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +76,7 @@ public class ElasticSearchAuditDestination extends AuditDestination {
     public static final String DEFAULT_INDEX = "ranger_audits";
 
     private String index = CONFIG_INDEX;
-    private final AtomicReference<RestHighLevelClient> clientRef = new AtomicReference<>(null);
+    private final AtomicReference<ElasticsearchClient> clientRef = new AtomicReference<>(null);
     private String protocol;
     private String user;
     private int port;
@@ -118,47 +118,54 @@ public class ElasticSearchAuditDestination extends AuditDestination {
         try {
             logStatusIfRequired();
             addTotalCount(events.size());
-
-            RestHighLevelClient client = getClient();
+    
+            ElasticsearchClient client = getClient();  // Замена на новый клиент
             if (null == client) {
                 // ElasticSearch is still not initialized. So need return error
                 addDeferredCount(events.size());
                 return ret;
             }
-
+    
             ArrayList<AuditEventBase> eventList = new ArrayList<>(events);
-            BulkRequest bulkRequest = new BulkRequest();
+            BulkRequest.Builder bulkRequestBuilder = new BulkRequest.Builder();  // Использование билдера для нового клиента
             try {
-                eventList.forEach(event -> {
-                    AuthzAuditEvent authzEvent = (AuthzAuditEvent) event;
+                for (int i = 0; i < eventList.size(); i++) {
+                    AuthzAuditEvent authzEvent = (AuthzAuditEvent) eventList.get(i);
                     String id = authzEvent.getEventId();
                     Map<String, Object> doc = toDoc(authzEvent);
-                    bulkRequest.add(new IndexRequest(index).id(id).source(doc));
-                });
+                    bulkRequestBuilder.operations(op -> op.index(idx -> idx.index(index).id(id).document(doc)));
+                }
             } catch (Exception ex) {
                 addFailedCount(eventList.size());
                 logFailedEvent(eventList, ex);
             }
-            BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
-            if (response.status().getStatus() >= 400) {
+            
+            BulkRequest bulkRequest = bulkRequestBuilder.build();  // Завершаем создание BulkRequest
+            BulkResponse response = client.bulk(bulkRequest);  // Отправка запроса
+    
+            if (response.errors()) {
                 addFailedCount(eventList.size());
-                logFailedEvent(eventList, "HTTP " + response.status().getStatus());
+                logFailedEvent(eventList, "Errors in Bulk Response");
             } else {
-                BulkItemResponse[] items = response.getItems();
-                for (int i = 0; i < items.length; i++) {
-                    AuditEventBase itemRequest = eventList.get(i);
-                    BulkItemResponse itemResponse = items[i];
-                    if (itemResponse.isFailed()) {
+                int successCount = 0;
+                int failedCount = 0;
+                // Исправляем получение элементов ответа
+                for (BulkResponseItem item : response.items()) {
+                    AuditEventBase itemRequest = eventList.get(successCount + failedCount); // Используем счётчики для корректного доступа
+                    if (item.error() != null) {
                         addFailedCount(1);
-                        logFailedEvent(Arrays.asList(itemRequest), itemResponse.getFailureMessage());
+                        logFailedEvent(Arrays.asList(itemRequest), item.error().reason());
+                        failedCount++;
                     } else {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug(String.format("Indexed %s", itemRequest.getEventKey()));
                         }
                         addSuccessCount(1);
                         ret = true;
+                        successCount++;
                     }
                 }
+                LOG.info("Successfully sent messages to ElasticSearch: " + successCount + " ,Failed to send messages: " + failedCount);
             }
         } catch (Throwable t) {
             addDeferredCount(events.size());
@@ -168,10 +175,10 @@ public class ElasticSearchAuditDestination extends AuditDestination {
     }
 
     /*
-     * (non-Javadoc)
-     *
-     * @see org.apache.ranger.audit.provider.AuditProvider#flush()
-     */
+    * (non-Javadoc)
+    *
+    * @see org.apache.ranger.audit.provider.AuditProvider#flush()
+    */
     @Override
     public void flush() {
         // Empty flush method
@@ -181,8 +188,8 @@ public class ElasticSearchAuditDestination extends AuditDestination {
         return true;
     }
 
-    synchronized RestHighLevelClient getClient() {
-        RestHighLevelClient client = clientRef.get();
+    synchronized ElasticsearchClient getClient() {
+        ElasticsearchClient client = clientRef.get();
         if (client == null) {
             synchronized (ElasticSearchAuditDestination.class) {
                 client = clientRef.get();
@@ -256,32 +263,36 @@ public class ElasticSearchAuditDestination extends AuditDestination {
         return restClientBuilder;
     }
 
-    private RestHighLevelClient newClient() {
+    private ElasticsearchClient newClient() {
         try {
             if (StringUtils.isNotBlank(user) && StringUtils.isNotBlank(password) && password.contains("keytab") && new File(password).exists()) {
                 subject = CredentialsProviderUtil.login(user, password);
             }
             RestClientBuilder restClientBuilder =
                     getRestClientBuilder(hosts, protocol, user, password, port);
-            try (RestHighLevelClient restHighLevelClient = new RestHighLevelClient(restClientBuilder)) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Initialized client");
-                }
-                boolean exists = false;
-                try {
-                    exists = restHighLevelClient.indices().open(new OpenIndexRequest(this.index), RequestOptions.DEFAULT).isShardsAcknowledged();
-                } catch (Exception e) {
-                    LOG.warn("Error validating index " + this.index);
-                }
-                if (exists) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Index exists");
-                    }
-                } else {
-                    LOG.info("Index does not exist");
-                }
-                return restHighLevelClient;
+
+            RestClient restClient = restClientBuilder.build();
+            RestClientTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+            ElasticsearchClient client = new ElasticsearchClient(transport);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Initialized client");
             }
+
+            boolean exists = false;
+            try {
+                exists = client.indices().exists(c -> c.index(this.index)).value();
+            } catch (Exception e) {
+                LOG.warn("Error validating index " + this.index);
+            }
+            if (exists) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Index exists");
+                }
+            } else {
+                LOG.info("Index does not exist");
+            }
+            return client;
         } catch (Throwable t) {
             lastLoggedAt.updateAndGet(lastLoggedAt -> {
                 long now = System.currentTimeMillis();
@@ -347,4 +358,4 @@ public class ElasticSearchAuditDestination extends AuditDestination {
         return doc;
     }
 
-}
+} 
